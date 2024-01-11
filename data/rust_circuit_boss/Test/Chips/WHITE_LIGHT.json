@@ -1,0 +1,46 @@
+{
+  "Name": "WHITE_LIGHT",
+  "Colour": "#FFFFFF",
+  "InputPins": [
+    {
+      "Name": "Power In",
+      "ID": 1560072085,
+      "PositionY": 0.5185187,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "OutputPins": [
+    {
+      "Name": "Passthrough",
+      "ID": 2094154624,
+      "PositionY": 0.0925928354,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "SubChips": [],
+  "Connections": [
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 1560072085
+      },
+      "Target": {
+        "PinType": 2,
+        "SubChipID": 0,
+        "PinID": 2094154624
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": 0.5185187
+        },
+        {
+          "X": 7.837778,
+          "Y": 0.0925928354
+        }
+      ],
+      "ColourThemeName": "Red"
+    }
+  ]
+}

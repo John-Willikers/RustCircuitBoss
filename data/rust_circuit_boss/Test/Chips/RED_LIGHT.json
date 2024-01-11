@@ -1,0 +1,46 @@
+{
+  "Name": "RED_LIGHT",
+  "Colour": "#DE050B",
+  "InputPins": [
+    {
+      "Name": "Power In",
+      "ID": 1747347356,
+      "PositionY": 0.472221971,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "OutputPins": [
+    {
+      "Name": "Passthrough",
+      "ID": 2031641637,
+      "PositionY": 0.5092591,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "SubChips": [],
+  "Connections": [
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 1747347356
+      },
+      "Target": {
+        "PinType": 2,
+        "SubChipID": 0,
+        "PinID": 2031641637
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": 0.472221971
+        },
+        {
+          "X": 7.837778,
+          "Y": 0.5092591
+        }
+      ],
+      "ColourThemeName": "Red"
+    }
+  ]
+}

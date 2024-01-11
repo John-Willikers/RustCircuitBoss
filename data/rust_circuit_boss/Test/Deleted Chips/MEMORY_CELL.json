@@ -1,0 +1,64 @@
+{
+  "Name": "MEMORY_CELL",
+  "Colour": "#7E2004",
+  "InputPins": [
+    {
+      "Name": "A0",
+      "ID": 1645114056,
+      "PositionY": 0.944444537,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "SET",
+      "ID": 1490501836,
+      "PositionY": -1.24074078,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "RESET",
+      "ID": 1508035942,
+      "PositionY": -1.9629631,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "TOGGLE",
+      "ID": 846538353,
+      "PositionY": -2.66666651,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "OutputPins": [
+    {
+      "Name": "Pin",
+      "ID": 1187757136,
+      "PositionY": 0.5740738,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "SubChips": [],
+  "Connections": [
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 1645114056
+      },
+      "Target": {
+        "PinType": 2,
+        "SubChipID": 0,
+        "PinID": 1187757136
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": 0.944444537
+        },
+        {
+          "X": 7.837778,
+          "Y": 0.5740738
+        }
+      ],
+      "ColourThemeName": "Red"
+    }
+  ]
+}

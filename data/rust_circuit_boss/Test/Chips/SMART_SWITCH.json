@@ -1,0 +1,46 @@
+{
+  "Name": "SMART_SWITCH",
+  "Colour": "#1D33A2",
+  "InputPins": [
+    {
+      "Name": "Electric Input",
+      "ID": 1665331457,
+      "PositionY": 0.7314813,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "OutputPins": [
+    {
+      "Name": "Output",
+      "ID": 1130639402,
+      "PositionY": 1.07407391,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "SubChips": [],
+  "Connections": [
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 1665331457
+      },
+      "Target": {
+        "PinType": 2,
+        "SubChipID": 0,
+        "PinID": 1130639402
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": 0.7314813
+        },
+        {
+          "X": 7.837778,
+          "Y": 1.07407391
+        }
+      ],
+      "ColourThemeName": "Red"
+    }
+  ]
+}

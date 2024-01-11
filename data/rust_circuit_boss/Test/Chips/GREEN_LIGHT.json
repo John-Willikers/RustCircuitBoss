@@ -1,0 +1,50 @@
+{
+  "Name": "GREEN_LIGHT",
+  "Colour": "#1D8C20",
+  "InputPins": [
+    {
+      "Name": "Power In",
+      "ID": 1440466390,
+      "PositionY": 0.6111109,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "OutputPins": [
+    {
+      "Name": "Passthrough",
+      "ID": 763761862,
+      "PositionY": 0.296296477,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "SubChips": [],
+  "Connections": [
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 1440466390
+      },
+      "Target": {
+        "PinType": 2,
+        "SubChipID": 0,
+        "PinID": 763761862
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": 0.6111109
+        },
+        {
+          "X": 7.95370436,
+          "Y": 0.259259343
+        },
+        {
+          "X": 7.837778,
+          "Y": 0.296296477
+        }
+      ],
+      "ColourThemeName": "Red"
+    }
+  ]
+}

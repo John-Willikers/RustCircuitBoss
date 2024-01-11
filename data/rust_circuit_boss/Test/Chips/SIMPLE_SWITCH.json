@@ -1,0 +1,46 @@
+{
+  "Name": "SIMPLE_SWITCH",
+  "Colour": "#5A2459",
+  "InputPins": [
+    {
+      "Name": "Electric Input",
+      "ID": 826433923,
+      "PositionY": 0.703703761,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "OutputPins": [
+    {
+      "Name": "Output",
+      "ID": 1487928366,
+      "PositionY": 0.703703761,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "SubChips": [],
+  "Connections": [
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 826433923
+      },
+      "Target": {
+        "PinType": 2,
+        "SubChipID": 0,
+        "PinID": 1487928366
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": 0.703703761
+        },
+        {
+          "X": 7.837778,
+          "Y": 0.703703761
+        }
+      ],
+      "ColourThemeName": "Red"
+    }
+  ]
+}

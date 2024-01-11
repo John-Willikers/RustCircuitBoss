@@ -1,0 +1,114 @@
+{
+  "Name": "E_BRANCH",
+  "Colour": "#5F4A3B",
+  "InputPins": [
+    {
+      "Name": "Power In",
+      "ID": 922794634,
+      "PositionY": 0.768518448,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "OutputPins": [
+    {
+      "Name": "Branch Out",
+      "ID": 2013649255,
+      "PositionY": 1.564815,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "Power Out",
+      "ID": 1240775795,
+      "PositionY": 0.416666865,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "SubChips": [
+    {
+      "Name": "OR",
+      "ID": 21919430,
+      "Points": [
+        {
+          "X": -2.43518519,
+          "Y": 0.5648148
+        }
+      ],
+      "Data": null
+    }
+  ],
+  "Connections": [
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 922794634
+      },
+      "Target": {
+        "PinType": 3,
+        "SubChipID": 21919430,
+        "PinID": 1979746457
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": 0.768518448
+        },
+        {
+          "X": -2.88518524,
+          "Y": 0.6848148
+        }
+      ],
+      "ColourThemeName": "Red"
+    },
+    {
+      "Source": {
+        "PinType": 4,
+        "SubChipID": 21919430,
+        "PinID": 1023024589
+      },
+      "Target": {
+        "PinType": 2,
+        "SubChipID": 0,
+        "PinID": 2013649255
+      },
+      "WirePoints": [
+        {
+          "X": -1.98518515,
+          "Y": 0.5648148
+        },
+        {
+          "X": 7.64814854,
+          "Y": 1.49074078
+        },
+        {
+          "X": 7.837778,
+          "Y": 1.564815
+        }
+      ],
+      "ColourThemeName": "Red"
+    },
+    {
+      "Source": {
+        "PinType": 4,
+        "SubChipID": 21919430,
+        "PinID": 1023024589
+      },
+      "Target": {
+        "PinType": 2,
+        "SubChipID": 0,
+        "PinID": 1240775795
+      },
+      "WirePoints": [
+        {
+          "X": -1.98518515,
+          "Y": 0.5648148
+        },
+        {
+          "X": 7.837778,
+          "Y": 0.416666865
+        }
+      ],
+      "ColourThemeName": "Red"
+    }
+  ]
+}
