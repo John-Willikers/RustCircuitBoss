@@ -1,0 +1,14 @@
+.vscode
+config
+lang
+logs
+plugins/AntiEntity.cs
+plugins/BGrade.cs
+plugins/CopyPaste.cs
+plugins/ElectricGeneratorTweaker.cs
+plugins/FreeBuild.cs
+plugins/NoDecay.cs
+data/copypaste
+data/*.json
+data/*.data
+oxide.config.json
