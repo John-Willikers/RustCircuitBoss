@@ -1,4 +1,6 @@
-﻿#define DEBUG
+﻿// Requires: Picasso
+// Requires: JData
+#define DEBUG
 using System.Collections.Generic;
 using System;
 using System.Drawing;
@@ -20,9 +22,13 @@ namespace Oxide.Plugins
     [Description("Takes Project files from Digital Logic Sim and generates them in game")]
     class RustCircuitBoss : CovalencePlugin
     {
-        private ProjectReader project_reader;
+        // Begin Plugin References
+        [PluginReference] 
+        private Picasso Picasso;
+        [PluginReference]
+        private JData JData;
+        // End Plugin References
         private Dictionary<string, Project> loaded_projects = new Dictionary<string, Project>();
-        // private Dictionary<string, Chip>
         private Dictionary<string, string> gate_bindings = new Dictionary<string, string>{
             {"SPLITTER", "assets/prefabs/deployable/playerioents/splitter/splitter.prefab"},
             {"BLOCKER", "assets/prefabs/deployable/playerioents/gates/blocker/electrical.blocker.deployed.prefab"},
@@ -46,15 +52,25 @@ namespace Oxide.Plugins
         private void Init()
         {
             Puts("A baby plugin is born!");
-            project_reader = new ProjectReader(new DataFileSystem($"{Interface.Oxide.DataDirectory}\\rust_circuit_boss"));
+        }
+
+        private void Loaded()
+        {
+            JData.SetNewDataDir("rust_circuit_boss");
             #if DEBUG
                 Puts("DEBUG ENABLED - loading test project to Ten'a Account");
-                loaded_projects.Add("76561198064426107", project_reader.ReadProject("Test"));
+                JData.AssignProjectToUser("76561198064426107", "Test");
             #endif
         }
 
         #if DEBUG
         // BEGIN TEST FUNCS 
+        
+        /**
+        * Test Func to spawn a sign and draw on it
+        * 
+        * @param IPlayer player
+        */
         public void BobRoss(IPlayer player)
         {
             GenericPosition position = player.Position();
@@ -71,7 +87,7 @@ namespace Oxide.Plugins
                 {"Oh No", Brushes.Orange}
             };
 
-            var imageBytes = Picasso.DrawSign(128, 64, 30, 10, lines);
+            var imageBytes = Picasso.DrawSign(128, 64, 17, 16, lines);
 
             player.Reply($"Image Bytes: {imageBytes.Length} - {imageBytes.ToString()}");
 
@@ -79,6 +95,9 @@ namespace Oxide.Plugins
             my_sign.SendNetworkUpdate();
         }
 
+        /**
+        * Test Func to spawn IOEntities and wire them together
+        */
         public void GetSlots(IPlayer player)
         {
             GenericPosition position = player.Position();
@@ -131,17 +150,6 @@ namespace Oxide.Plugins
             splitter.MarkDirtyForceUpdateOutputs();
             splitter.SendNetworkUpdate();
             e_branch.SendNetworkUpdate();
-        }
-
-        public void Compass(IPlayer player)
-        {
-            GenericPosition position = player.Position();
-
-            SpawnEntity(
-                gate_bindings["SPLITTER"],
-                new Vector3(position.X, position.Y, position.Z+1),
-                new Quaternion(1, 1, 1, 1)
-            );
         }
         // END TEST FUNCS
         #endif
@@ -211,12 +219,12 @@ namespace Oxide.Plugins
             outputSlot.connectedTo.Init(); 
 
             // Setup Wire - TODO FIXED THIS BROKEN SHIT (COULD BE FIXED SHIT NOW)
-            // outputSlot.wireColour = (WireTool.WireColour)3;
-            // outputSlot.type = (IOEntity.IOType)0;
-            // var lineList = new List<Vector3>();
-            // lineList.Add(sourceEntity.transform.position);
-            // lineList.Add(targetEntity.transform.position);
-            // source.outputs[sourceIndex].linePoints = lineList.ToArray();
+            outputSlot.wireColour = (WireTool.WireColour)0;
+            outputSlot.type = (IOEntity.IOType)0;
+            var lineList = new List<Vector3>();
+            lineList.Add(source.transform.position);
+            lineList.Add(target.transform.position);
+            source.outputs[sourceIndex].linePoints = lineList.ToArray();
 
             // Update source and Target
             source.MarkDirtyForceUpdateOutputs();
@@ -292,7 +300,7 @@ namespace Oxide.Plugins
                     }
 
 
-                    Chip chip_to_load = project_reader.ReadChip(project, subChip.Name);
+                    Chip chip_to_load = project.ReadChip(subChip.Name);
                     if (chip_to_load == null)
                         goto SkipNormalChipLoad;
 
@@ -520,9 +528,10 @@ namespace Oxide.Plugins
         {
             string chip_name = args[0];
 
-            if (! loaded_projects.ContainsKey(player.Id))
+            Project loaded_project = JData.GetUserProject(player.Id);
+            if (loaded_project == null)
             {
-                player.Reply($"You must load a project first to build a chip!");
+                player.Reply($"No project loaded | /c_load <project_name>");
                 return;
             }
 
@@ -532,8 +541,7 @@ namespace Oxide.Plugins
             Dictionary<string, Pin> loaded_pins = new Dictionary<string, Pin>();
             int offset = 0;
 
-            Project loaded_project = loaded_projects[player.Id];
-            Chip chip = project_reader.ReadChip(loaded_project, chip_name);
+            Chip chip = loaded_project.ReadChip(chip_name);
             if (chip == null)
                 return;
             loaded_chips.Add("0", chip);
@@ -546,24 +554,26 @@ namespace Oxide.Plugins
         [Command("c_load")]
         private void ProjectLoadCommand(IPlayer player, string command, string[] args)
         {
-            string project_name = args[0];
-            loaded_projects.Add(player.Id, project_reader.ReadProject(project_name));
-            player.Reply($"Loaded: {project_name}");
+            var loaded_project = JData.AssignProjectToUser(player.Id, args[0]);
+            if (loaded_project == null)
+                player.Reply($"Failed to load project: {args[0]}");
+            else
+                player.Reply($"Loaded: {loaded_project.ProjectName}");
         }
 
         [Command("c_info")]
         private void ProjectInfoCommand(IPlayer player, string command, string[] args)
         {
-            if (! loaded_projects.ContainsKey(player.Id))
+            var loaded_project = JData.GetUserProject(player.Id);
+            if (loaded_project == null)
             {
-                player.Reply("You do not have a project loaded, please load one");
+                player.Reply($"No project loaded");
                 return;
             }
-
-            Project proj = loaded_projects[player.Id];
-            player.Reply($"Project: {proj.ProjectName}");
+              
+            player.Reply($"Project: {loaded_project.ProjectName}");
             player.Reply("Created Chips: ");
-            foreach (string chipName in proj.AllCreatedChips)
+            foreach (string chipName in loaded_project.AllCreatedChips)
             {
                 if (gate_bindings.ContainsKey(chipName))
                     continue;
@@ -574,15 +584,11 @@ namespace Oxide.Plugins
         [Command("c_unload")]
         private void ProjectUnloadCommand(IPlayer player, string command, string[] args)
         {
-            if (loaded_projects.ContainsKey(player.Id))
-            {
-                loaded_projects.Remove(player.Id);
+            var result = JData.UnloadUserProject(player.Id);
+            if (result)
                 player.Reply($"Unloaded project");
-            }
             else
-            {
-                player.Reply($"No Project to Unload");
-            }
+                player.Reply($"No project to unload");
         }
 
         #if DEBUG
@@ -591,8 +597,8 @@ namespace Oxide.Plugins
             private void CTestCommand(IPlayer player, string command, string[] args)
             {
                     player.Reply($"Beginning Test");
-                    GetSlots(player);
-                    // BobRoss(player);
+                    // GetSlots(player);
+                    BobRoss(player);
                     player.Reply($"Test Complete");
                 
             }
@@ -603,193 +609,11 @@ namespace Oxide.Plugins
         {
             #if !DEBUG
                 // Remove player from projects dictionary;
-                loaded_projects.Remove(player.Id);
+                JData.UnloadUserProject(player.Id);
                 Puts($"{player.Name} ({player.Id}) project unloaded");
             #endif
         }
         // END Hooks
-    }
-
-    // BEGIN DATATYPES FOR DE-SERIALIZATION 
-    class ParentHelpers {
-        public ProjectReader project_reader = new ProjectReader(new DataFileSystem($"{Interface.Oxide.DataDirectory}\\rust_circuit_boss"));
-        public long LongRandom(long min=100000000000000000, long max=100000000000000050) {
-            System.Random rand = new System.Random();
-            byte[] buf = new byte[8];
-            rand.NextBytes(buf);
-            long longRand = BitConverter.ToInt64(buf, 0);
-
-            return (Math.Abs(longRand % (max - min)) + min);
-        }
-    }
-
-    class Pin {
-        public string Name;
-        public long ID;
-
-        public float PositionY;
-
-        public string ToString()
-        {
-            return $"Pin ({ID}) - {Name}";
-        }
-    }
-
-    class ConnectionIO {
-        public long PinID;
-        public long PinType;
-        public long SubChipID;
-
-        public string ToString()
-        {
-            return $"Chip: {SubChipID} \n Pin: {PinID}";
-        }
-    }
-
-    class Connection {
-        public ConnectionIO Source;
-        public ConnectionIO Target;
-
-        public string ToString()
-        {
-            return $"Source\n {Source.ToString()} \n Target\n {Target.ToString()}";
-        }
-    }
-
-    class Chip : ParentHelpers {
-        public string Name;
-        public HashSet<SubChip> SubChips = new HashSet<SubChip>();
-        public HashSet<Pin> InputPins = new HashSet<Pin>();
-        public HashSet<Pin> OutputPins = new HashSet<Pin>();
-        public HashSet<Connection> Connections = new HashSet<Connection>();
-
-        public void generateNewIds() 
-        {
-            // Dictionary<long, Chip> chip_definitions = new Dictionary<string, Chip>();
-            // Dictionary<long, long> inputPinIdMaps = new Dictionary<long, long>();
-            // Dictionary<long, long> outputPinIdMaps = new Dictionary<long, long>();
-            // Dictionary<long, long> subChipIdMaps = new Dictionary<long, long>();
-
-            // // Generate new Pin Ids (Input & Output)
-            // for (int i = 0; i < 2; i++)
-            // {
-            //     var iter = i == 0 ? InputPins : OutputPins;
-            //     foreach (Pin pin in iter) {
-            //         long newId = LongRandom();
-            //         if (i == 0)
-            //             inputPinIdMaps.Add(pin.ID, newId);
-            //         else
-            //             outputPinIdMaps.Add(pin.ID, newId);
-            //         pin.ID = newId;
-            //     }
-            // }
-
-            // foreach (SubChip subChip in SubChips)
-            // {
-                
-            // }
-
-            // foreach (Connection connection in Connections)
-            // {
-            //     // Generate new Connection Ids
-            //     connection.Source.PinID = inputPinIdMaps[connection.Source.PinID];
-            //     connection.Target.PinID = outputPinIdMaps[connection.Target.PinID];
-
-            //     // Generate new SubChip Ids
-            //     if (connection.Source.SubChipID > 0)
-            //         connection.Source.SubChipID = subChipIdMaps[connection.Source.SubChipID];
-
-            //     if (connection.Target.SubChipID > 0)
-            //         connection.Target.SubChipID = subChipIdMaps[connection.Target.SubChipID];
-            // }
-        }
-
-        public string ToString()
-        {
-            string message = $"{Name} \n SubChips:\n";
-            foreach (SubChip chip in SubChips) {
-                message += $"{chip.ToString()}\n";
-            }
-
-            message += "Connections\n";
-            foreach (Connection connection in Connections) {
-                message += $"{connection.ToString()}\n";
-            }
-
-            return message;
-        }
-    }
-
-    class SubChip {
-        public string Name;
-        public long ID;
-
-        public HashSet<Dictionary<string, float>> Points;
-
-        public string ToString()
-        {
-            return $"{Name} ({ID})";
-        }
-    }
-
-    class Project {
-        public string ProjectName;
-        public HashSet<string> AllCreatedChips = new HashSet<string>();
-    }
-    // END DATATYPES FOR DE-SERIALIZATION
-
-    class Picasso {
-        public static byte[] DrawSign(int width, int height, int yOffset, int fontSize, Dictionary<string, Brush> lines)
-        {
-            var image = new Bitmap(width, height);
-
-            var graphics = System.Drawing.Graphics.FromImage(image);
-            graphics.Clear(System.Drawing.Color.Black);
-
-            int i = 0;
-            foreach (KeyValuePair<string, Brush> line in lines) {
-                graphics.DrawString(line.Key, new System.Drawing.Font("Arial", fontSize), line.Value, new RectangleF(0, i * yOffset, width, height));
-                yOffset += fontSize;
-                i++;
-            }
-            
-            return GetBitmapBytes(image);
-        }
-
-        public static byte[] GetBitmapBytes(Bitmap bitmap)
-        {
-            using (MemoryStream stream = new MemoryStream())
-            {
-                // Save the bitmap to the MemoryStream as PNG
-                bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-
-                // Get the byte array from the MemoryStream
-                return stream.ToArray();
-            }
-        }
-    }
-
-    class ProjectReader {
-        private DataFileSystem project_location = new DataFileSystem($"{Interface.Oxide.DataDirectory}\\rust_circuit_boss");
-
-        public ProjectReader(DataFileSystem project_location)
-        {
-            this.project_location = project_location;
-        }
-
-        public Project ReadProject(string name)
-        {
-            return project_location.ExistsDatafile($"{name}/ProjectSettings") 
-                    ? project_location.ReadObject<Project>($"{name}/ProjectSettings")
-                    : null;
-        }
-
-        public Chip ReadChip(Project project, string chip_name)
-        {
-            return project_location.ExistsDatafile($"{project.ProjectName}/Chips/{chip_name}")
-                    ? project_location.ReadObject<Chip>($"{project.ProjectName}/Chips/{chip_name}")
-                    : null;
-        }
     }
 
     class IODefinitions {
