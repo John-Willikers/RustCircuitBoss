@@ -1,15 +1,46 @@
-using System;
-using System.IO;
-using System.Drawing;
 using System.Collections.Generic;
+using System;
+using System.Drawing;
+using System.IO;
+using static System.Random;
+using Oxide.Core;
 using Oxide.Core.Plugins;
+using UnityEngine;
 
 namespace Oxide.Plugins
 {
     [Info("Picasso", "JohnWillikers", "0.1.0")]
     [Description("Used to draw things on signs")]
     class Picasso : RustPlugin {
-        public static byte[] DrawSign(int width, int height, int yOffset, int fontSize, Dictionary<string, Brush> lines)
+        public enum FontSize {
+            Small = 12,
+            Medium = 24,
+            Large = 36
+        }
+
+        public enum Signs: int {
+            WoodenSmall = 0,
+        }
+
+        private string[] SignBindings = new string[] {
+            "assets/prefabs/deployable/signs/sign.small.wood.prefab"
+        };
+
+        public void SpawnSign(Vector3 position, Signs sign_type, int width, int height, int yOffset, FontSize fontSize, Dictionary<string, Brush> lines)
+        {
+            // Create a Sign
+            var sign = GameManager.server.CreateEntity(SignBindings[(int) sign_type], position, new Quaternion(1, 1 , 1, 1)) as Signage;
+            sign.Spawn();
+            sign.SetFlag(BaseEntity.Flags.Locked, true);
+            sign.SendNetworkUpdateImmediate();
+
+            // Write Bitmap to Server and assign to Sign
+            var image = DrawTextSign(width, height, yOffset, (int) fontSize, lines);
+            sign.textureIDs[0] = FileStorage.server.Store(image, FileStorage.Type.png, sign.net.ID);
+            sign.SendNetworkUpdateImmediate();
+        }
+
+        public static byte[] DrawTextSign(int width, int height, int yOffset, int fontSize, Dictionary<string, Brush> lines)
         {
             var image = new Bitmap(width, height);
 

@@ -1,4 +1,4 @@
-﻿// Requires: Picasso
+// Requires: Picasso
 // Requires: JData
 #define DEBUG
 using System.Collections.Generic;
@@ -87,12 +87,15 @@ namespace Oxide.Plugins
                 {"Oh No", Brushes.Orange}
             };
 
-            var imageBytes = Picasso.DrawSign(128, 64, 17, 16, lines);
-
-            player.Reply($"Image Bytes: {imageBytes.Length} - {imageBytes.ToString()}");
-
-            my_sign.textureIDs[0] = FileStorage.server.Store(imageBytes, FileStorage.Type.png, my_sign.net.ID);
-            my_sign.SendNetworkUpdate();
+            Picasso.SpawnSign(
+                new Vector3(position.X, position.Y, position.Z + 1),
+                Picasso.Signs.WoodenSmall,
+                128,
+                64,
+                17,
+                Picasso.FontSize.Small,
+                lines
+            );
         }
 
         /**
@@ -375,22 +378,18 @@ namespace Oxide.Plugins
                     BuildChip(player, project, loaded_chips[subChip.ID.ToString()], custom_chips, pin_connections, loaded_chips, loaded_pins, offset, subChip.ID);
                 }
 
-                // INSERT MAKE SIGN
-                Signage switch_sign = SpawnEntity(
-                    sign_bindings["SMALL_WOOD_SIGN"],
+                Picasso.SpawnSign(
                     new Vector3(position.X, position.Y, position.Z + offset),
-                    new Quaternion(1, 1, 1, 1)
-                ) as Signage;
-
-                var lines = new Dictionary<string, Brush>
-                {
-                    {chip.Name, Brushes.Yellow},
-                };
-
-                var imageData = Picasso.DrawSign(128, 64, 17, 16, lines);
-
-                switch_sign.textureIDs[0] = FileStorage.server.Store(imageData, FileStorage.Type.png, switch_sign.net.ID);
-                switch_sign.SendNetworkUpdate();
+                    Picasso.Signs.WoodenSmall,
+                    128,
+                    64,
+                    17,
+                    Picasso.FontSize.Small,
+                    new Dictionary<string, Brush>
+                    {
+                        {subChip.Name, Brushes.Yellow},
+                    }
+                );
             }
 
             foreach(Connection connection in chip.Connections)
