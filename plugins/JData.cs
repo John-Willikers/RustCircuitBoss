@@ -16,36 +16,10 @@ namespace Oxide.Plugins {
     class JData : RustPlugin {
         // Begin Plugin References
        [PluginReference] 
-        public Picasso Picasso;
+        private Picasso Picasso;
         // End Plugin References
         private DataFileSystem data_dir = new DataFileSystem($"{Interface.Oxide.DataDirectory}");
         private Dictionary<string, Project> user_loaded_projects = new Dictionary<string, Project>(); 
-
-        public void Loaded()
-        {
-            // #if DEBUG
-            //     var john = PlayerManager.FindPlayer("76561198064426107");
-
-            //     john.Reply("Hello World");
-            // #endif
-
-            // var lines = new Dictionary<string, Brush>
-            // {
-            //     {"Hello World", Brushes.Yellow },
-            //     {"Oh No", Brushes.Orange}
-            // };
-
-            
-            // Picasso.SpawnSign(
-            //     new Vector3(position.X, position.Y, position.Z + 1),
-            //     Picasso.Signs.WoodenSmall,
-            //     128,
-            //     64,
-            //     17,
-            //     Picasso.FontSize.Small,
-            //     lines
-            // );
-        }
 
         public void SetNewDataDir(string name)
         {
@@ -307,22 +281,6 @@ namespace Oxide.Plugins {
 
             return entity;
         }
-
-        /**
-         * Generates a random long between a min and max value
-         * 
-         * @param long min
-         * @param long max
-         * @return long
-         */
-        public long LongRandom(long min=100000000000000000, long max=100000000000000050) {
-            System.Random rand = new System.Random();
-            byte[] buf = new byte[8];
-            rand.NextBytes(buf);
-            long longRand = BitConverter.ToInt64(buf, 0);
-
-            return (Math.Abs(longRand % (max - min)) + min);
-        }
     }
 
     // BEGIND DATATYPES FOR DE-SERIALIZATION
@@ -478,6 +436,19 @@ namespace Oxide.Plugins {
             player.Reply($"Building {Name} ({ID})");
             #endif
 
+            thisInstance.BindSaveSign(
+                new Vector3(startPosition.x + 14, startPosition.y, startPosition.z),
+                Picasso.Signs.WoodenSmall,
+                128,
+                64,
+                17,
+                Picasso.FontSize.Small,
+                new Dictionary<string, Brush> {
+                    {Name, Brushes.Yellow},
+                    {ID.ToString(), Brushes.Orange}
+                }
+            );
+
             // Build our SubChips for this Chip
             foreach (SubChip chip in SubChips) {
                 // Add Chip Definition to our Dictionary
@@ -523,32 +494,18 @@ namespace Oxide.Plugins {
 
                     customChipCount++;
                     // player.Reply("HIT");
-                    // thisInstance.BindSaveSign(
-                    //     localChipAdjustedPosition,
-                    //     Picasso.Signs.WoodenSmall,
-                    //     128,
-                    //     64,
-                    //     17,
-                    //     Picasso.FontSize.Small,
-                    //     new Dictionary<string, Brush> {
-                    //         {chip.Name, Brushes.Yellow},
-                    //         {chip.ID.ToString(), Brushes.Orange}
-                    //     }
-                    // );
-                    // Put a Sign in the place of the subchips spot
-                    // Interface.CallHook(
-                    //     "MakeSign",
-                    //     localChipAdjustedPosition,
-                    //     Picasso.Signs.WoodenSmall,
-                    //     128,
-                    //     64,
-                    //     17,
-                    //     Picasso.FontSize.Small,
-                    //     new Dictionary<string, Brush> {
-                    //         {chip.Name, Brushes.Yellow},
-                    //         {chip.ID.ToString(), Brushes.Orange}
-                    //     }
-                    // );
+                    thisInstance.BindSaveSign(
+                        localChipAdjustedPosition,
+                        Picasso.Signs.WoodenSmall,
+                        128,
+                        64,
+                        17,
+                        Picasso.FontSize.Small,
+                        new Dictionary<string, Brush> {
+                            {chip.Name, Brushes.Yellow},
+                            {chip.ID.ToString(), Brushes.Orange}
+                        }
+                    );
                 }
                 // If NOT || AND (DSL reserved) we spawn them as vanilla items
                 else if (string_to_gates[chip.Name] == Gates.AND || string_to_gates[chip.Name] == Gates.NOT) {
