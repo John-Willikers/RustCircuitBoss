@@ -81,7 +81,7 @@ namespace Oxide.Plugins {
                     : null;
         }
 
-        public void BindSaveSign(Vector3 position, Quaternion rotation, Picasso.Signs sign_type, int width, int height, int yOffset, Picasso.FontSize fontSize, Dictionary<string, Brush> lines)
+        public void BindSaveSign(Vector3 position, Quaternion rotation, Picasso.Signs sign_type, int width, int height, int yOffset, Picasso.FontSize fontSize, Dictionary<string, Brush> lines, System.Drawing.Color backgroundColor = default(System.Drawing.Color))
         {
             Picasso.SpawnSign(
                 position,
@@ -91,7 +91,8 @@ namespace Oxide.Plugins {
                 height,
                 yOffset,
                 fontSize,
-                lines
+                lines,
+                backgroundColor
             );
         }
 
@@ -340,6 +341,7 @@ namespace Oxide.Plugins {
         }
 
         private void Wire(
+            JData thisInstance,
             IPlayer player,
             Project project_reference,
             Dictionary<string, Chip> chipDefinitions,
@@ -383,6 +385,24 @@ namespace Oxide.Plugins {
                 else
                 {
                     sourceSlot = chipDefinitions[sourceChipId].DicOutputPins[sourcePinId].Name;
+                }
+
+                if (sourceGate == Gates.SIMPLE_SWITCH) {
+                    var sourcePosition = sourceEntity.transform.position;
+                    thisInstance.BindSaveSign(
+                        new Vector3(sourcePosition.x + 2, sourcePosition.y, sourcePosition.z),
+                        new Quaternion(0, 1, 0, 0),
+                        Picasso.Signs.WoodenSmall,
+                        128,
+                        64,
+                        17,
+                        Picasso.FontSize.Small,
+                        new Dictionary<string, Brush> {
+                            {chipDefinitions[targetChipId].Name, Brushes.Black},
+                            {chipDefinitions[targetChipId].DicInputPins[connection.Target.PinID].Name, Brushes.Orange}
+                        },
+                        System.Drawing.Color.Green
+                    );
                 }
 
                 player.Reply(chipDefinitions[targetChipId].Name);
@@ -448,7 +468,8 @@ namespace Oxide.Plugins {
                 new Dictionary<string, Brush> {
                     {Name, Brushes.Yellow},
                     {ID.ToString(), Brushes.Orange}
-                }
+                },
+                System.Drawing.Color.Blue
             );
 
             // Build our SubChips for this Chip
@@ -507,7 +528,8 @@ namespace Oxide.Plugins {
                         new Dictionary<string, Brush> {
                             {chip.Name, Brushes.Yellow},
                             {chip.ID.ToString(), Brushes.Orange}
-                        }
+                        },
+                        System.Drawing.Color.Black
                     );
                 }
                 // If NOT || AND (DSL reserved) we spawn them as vanilla items
@@ -549,7 +571,7 @@ namespace Oxide.Plugins {
                 }
             }
 
-            Wire(player, project_reference, chipDefinitions, pins, electricalComponents);
+            Wire(thisInstance, player, project_reference, chipDefinitions, pins, electricalComponents);
 
             return new object[]{
                 pins,

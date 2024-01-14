@@ -26,7 +26,7 @@ namespace Oxide.Plugins
             "assets/prefabs/deployable/signs/sign.small.wood.prefab"
         };
 
-        public void SpawnSign(Vector3 position, Quaternion rotation, Signs sign_type, int width, int height, int yOffset, FontSize fontSize, Dictionary<string, Brush> lines)
+        public void SpawnSign(Vector3 position, Quaternion rotation, Signs sign_type, int width, int height, int yOffset, FontSize fontSize, Dictionary<string, Brush> lines, System.Drawing.Color backgroundColor = default(System.Drawing.Color))
         {
             // Create a Sign
             var sign = GameManager.server.CreateEntity(SignBindings[(int) sign_type], position, rotation) as Signage;
@@ -35,17 +35,17 @@ namespace Oxide.Plugins
             sign.SendNetworkUpdateImmediate();
 
             // Write Bitmap to Server and assign to Sign
-            var image = DrawTextSign(width, height, yOffset, (int) fontSize, lines);
+            var image = DrawTextSign(width, height, yOffset, (int) fontSize, lines, backgroundColor);
             sign.textureIDs[0] = FileStorage.server.Store(image, FileStorage.Type.png, sign.net.ID);
             sign.SendNetworkUpdateImmediate();
         }
 
-        public static byte[] DrawTextSign(int width, int height, int yOffset, int fontSize, Dictionary<string, Brush> lines)
+        public static byte[] DrawTextSign(int width, int height, int yOffset, int fontSize, Dictionary<string, Brush> lines, System.Drawing.Color backgroundColor = default(System.Drawing.Color))
         {
             var image = new Bitmap(width, height);
 
             var graphics = System.Drawing.Graphics.FromImage(image);
-            graphics.Clear(System.Drawing.Color.Black);
+            graphics.Clear(backgroundColor);
 
             int i = 0;
             foreach (KeyValuePair<string, Brush> line in lines) {
