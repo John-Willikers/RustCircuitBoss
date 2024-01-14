@@ -466,7 +466,7 @@ namespace Oxide.Plugins {
             }
         }
 
-        public object[] Build(IPlayer player, JData thisInstance, Project project_reference, Vector3 startPosition, Quaternion startRotation)
+        public object[] Build(IPlayer player, JData thisInstance, Project project_reference, Vector3 startPosition, Quaternion startRotation, bool depthShouldBeZOrY = true)
         {
             var customChipCount = 1;
             var chipDefinitions = new Dictionary<string, Chip>();
@@ -502,9 +502,12 @@ namespace Oxide.Plugins {
                 // Is Custom Chip
                 if (!string_to_gates.ContainsKey(chip.Name))
                 {
-                    Vector3 nextSpot = new Vector3(startPosition.x, startPosition.y + (15 * customChipCount), startPosition.z);
+                    Vector3 nextSpot = new Vector3(startPosition.x, startPosition.y, startPosition.z + (15 * customChipCount));
+                    if (!depthShouldBeZOrY) {
+                        nextSpot = new Vector3(startPosition.x, startPosition.y + (15 * customChipCount), startPosition.z);
+                    }
                     var subChipDefinition = chipDefinitions[chip.ID.ToString()];
-                    var buildObjects = subChipDefinition.Build(player, thisInstance, project_reference, nextSpot, startRotation);
+                    var buildObjects = subChipDefinition.Build(player, thisInstance, project_reference, nextSpot, startRotation, !depthShouldBeZOrY);
 
                     // Add our SubChip Pins to our Pins List
                     foreach (KeyValuePair<string, IOEntity> entry in buildObjects[0] as Dictionary<string, IOEntity>) {
