@@ -1,25 +1,79 @@
+// Requires: Picasso
+#define DEBUG
+#define DISABLED_DEBUG_PINS
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using static System.Random;
 using Oxide.Core;
 using Oxide.Core.Plugins;
+using Oxide.Core.Libraries.Covalence;
+using UnityEngine;
 namespace Oxide.Plugins {
 
     [Info("JData", "JohnWillikers", "0.1.0")]
     [Description("Data Stuff")]
     class JData : RustPlugin {
-
+        // Begin Plugin References
+       [PluginReference] 
+        public Picasso Picasso;
+        // End Plugin References
         private DataFileSystem data_dir = new DataFileSystem($"{Interface.Oxide.DataDirectory}");
         private Dictionary<string, Project> user_loaded_projects = new Dictionary<string, Project>(); 
 
-        [HookMethod("SetNewDataDir")]
+        public void Loaded()
+        {
+            // #if DEBUG
+            //     var john = PlayerManager.FindPlayer("76561198064426107");
+
+            //     john.Reply("Hello World");
+            // #endif
+
+            // var lines = new Dictionary<string, Brush>
+            // {
+            //     {"Hello World", Brushes.Yellow },
+            //     {"Oh No", Brushes.Orange}
+            // };
+
+            
+            // Picasso.SpawnSign(
+            //     new Vector3(position.X, position.Y, position.Z + 1),
+            //     Picasso.Signs.WoodenSmall,
+            //     128,
+            //     64,
+            //     17,
+            //     Picasso.FontSize.Small,
+            //     lines
+            // );
+        }
+
         public void SetNewDataDir(string name)
         {
             user_loaded_projects.Clear();
             data_dir = new DataFileSystem($"{Interface.Oxide.DataDirectory}\\{name}");
         }
 
-        [HookMethod("AssignProjectToUser")]
+        [HookMethod("BuildChip")]
+        public void BuildChip(string chip_name, IPlayer player)
+        {
+            Project loaded_project = GetUserProject(player.Id);
+            if (loaded_project == null)
+            {
+                player.Reply($"No project loaded | /c_load <project_name>");
+                return;
+            }
+            Chip chip = loaded_project.ReadChip(chip_name);
+            if (chip == null)
+                return;
+
+            player.Reply($"Spawning {chip.Name}");
+
+            GenericPosition position = player.Position();
+
+            chip.Init(0);
+            chip.Build(player, this, loaded_project, new Vector3(position.X, position.Y, position.Z), new Quaternion(1, 1, 1, 1));
+        }
+
         public Project AssignProjectToUser(string uId, string project_name)
         {
             Project loaded_project = ReadProject(project_name);
@@ -34,7 +88,6 @@ namespace Oxide.Plugins {
             return loaded_project;
         }
 
-        [HookMethod("UnloadUserProject")]
         public bool UnloadUserProject(string uId)
         {
             if (user_loaded_projects.ContainsKey(uId)) {
@@ -47,12 +100,24 @@ namespace Oxide.Plugins {
 
         }
 
-        [HookMethod("GetUserProject")]
         public Project GetUserProject(string uId)
         {
             return (user_loaded_projects.ContainsKey(uId))
                     ? user_loaded_projects[uId]
                     : null;
+        }
+
+        public void BindSaveSign(Vector3 position, Picasso.Signs sign_type, int width, int height, int yOffset, Picasso.FontSize fontSize, Dictionary<string, Brush> lines)
+        {
+            Picasso.SpawnSign(
+                position,
+                sign_type,
+                width,
+                height,
+                yOffset,
+                fontSize,
+                lines
+            );
         }
 
         private Project ReadProject(string name)
@@ -69,7 +134,187 @@ namespace Oxide.Plugins {
     }
 
      // BEGIN DATATYPES FOR DE-SERIALIZATION 
+    enum Gates {
+        SPLITTER = 0,
+        BLOCKER = 1,
+        MEMORY_CELL = 2,
+        E_BRANCH = 3,
+        AND = 4,
+        OR = 5,
+        XOR = 6,
+        TEST_GENERATOR = 7,
+        SIMPLE_SWITCH = 8,
+        SMART_SWITCH = 9,
+        GREEN_LIGHT = 10,
+        RED_LIGHT = 11,
+        WHITE_LIGHT = 12,
+        NOT = 13
+    }
     class ParentHelpers {
+        // Prefabs
+        public Dictionary<Gates, string> prefab_gate_bindings = new Dictionary<Gates, string>{
+            { Gates.SPLITTER, "assets/prefabs/deployable/playerioents/splitter/splitter.prefab" },
+            { Gates.BLOCKER, "assets/prefabs/deployable/playerioents/gates/blocker/electrical.blocker.deployed.prefab" },
+            { Gates.MEMORY_CELL, "assets/prefabs/deployable/playerioents/gates/dflipflop/electrical.memorycell.deployed.prefab" },
+            { Gates.E_BRANCH, "assets/prefabs/deployable/playerioents/gates/branch/electrical.branch.deployed.prefab" },
+            { Gates.AND, "assets/prefabs/deployable/playerioents/gates/andswitch/andswitch.entity.prefab" },
+            { Gates.OR, "assets/prefabs/deployable/playerioents/gates/orswitch/orswitch.entity.prefab" },
+            { Gates.XOR, "assets/prefabs/deployable/playerioents/gates/xorswitch/xorswitch.entity.prefab" },
+            { Gates.TEST_GENERATOR, "assets/prefabs/deployable/playerioents/generators/generator.small.prefab" },
+            { Gates.SIMPLE_SWITCH, "assets/prefabs/deployable/playerioents/simpleswitch/switch.prefab" },
+            { Gates.SMART_SWITCH, "assets/prefabs/deployable/playerioents/app/smartswitch/smartswitch.prefab" },
+            { Gates.GREEN_LIGHT, "assets/prefabs/misc/permstore/industriallight/industrial.wall.lamp.green.deployed.prefab" },
+            { Gates.RED_LIGHT, "assets/prefabs/misc/permstore/industriallight/industrial.wall.lamp.red.deployed.prefab" },
+            { Gates.WHITE_LIGHT, "assets/prefabs/misc/permstore/industriallight/industrial.wall.lamp.deployed.prefab" },
+            { Gates.NOT, "na"}
+        };
+        // Strings
+        public Dictionary<string, Gates> string_to_gates = new Dictionary<string, Gates> {
+            { "SPLITTER", Gates.SPLITTER },
+            { "BLOCKER", Gates.BLOCKER },
+            { "MEMORY_CELL", Gates.MEMORY_CELL },
+            { "E_BRANCH", Gates.E_BRANCH },
+            { "AND", Gates.AND },
+            { "OR", Gates.OR },
+            { "XOR", Gates.XOR },
+            { "TEST_GENERATOR", Gates.TEST_GENERATOR },
+            { "SIMPLE_SWITCH", Gates.SIMPLE_SWITCH },
+            { "SMART_SWITCH", Gates.SMART_SWITCH },
+            { "GREEN_LIGHT", Gates.GREEN_LIGHT },
+            { "RED_LIGHT", Gates.RED_LIGHT },
+            { "WHITE_LIGHT", Gates.WHITE_LIGHT },
+            { "NOT", Gates.NOT }
+        };
+        // IO Definitions
+        public Dictionary<Gates, Dictionary<string,int>> io_definitions = new Dictionary<Gates, Dictionary<string, int>>
+        {
+            {Gates.TEST_GENERATOR, new Dictionary<string, int>
+                {
+                    {"Power Output 1", 0 },
+                    {"Power Output 2", 1 },
+                    {"Power Output 3", 2 }
+                }
+            },
+            {Gates.AND, new Dictionary<string, int>
+                {
+                    {"Input A", 0 },
+                    {"Input B", 1 },
+                    {"Power Out", 0 }
+                }
+            },
+            {Gates.XOR, new Dictionary<string, int>
+                {
+                    {"Input A", 0 },
+                    {"Input B", 1 },
+                    {"Power Out", 0 }
+                }
+            },
+            {Gates.OR, new Dictionary<string, int>
+                {
+                    {"Input A", 0 },
+                    {"Input B", 1 },
+                    {"Power Out", 0 }
+                }
+            },
+            {Gates.MEMORY_CELL, new Dictionary<string, int>
+                {
+                    {"Power In", 0 },
+                    {"SET", 1 },
+                    {"RESET", 2 },
+                    {"TOGGLE", 3 },
+                    {"Out", 0 },
+                    {"Inverted_Out", 1 }
+                }
+            },
+            {Gates.BLOCKER, new Dictionary<string, int>
+                {
+                    {"Power In", 0 },
+                    {"Block Pass", 1 },
+                    {"Power Out", 0 }
+                }
+            },
+            {Gates.SPLITTER, new Dictionary<string, int>
+                {
+                    {"Power In", 0 },
+                    {"Power Out 1", 0 },
+                    {"Power Out 2", 1 },
+                    {"Power Out 3", 2 }
+                }
+            },
+            {Gates.E_BRANCH, new Dictionary<string, int>
+                {
+                    {"Power Out", 0 },
+                    {"Branch Out", 1 },
+                    {"Power In", 0 }
+                }
+            },
+            {Gates.SIMPLE_SWITCH, new Dictionary<string, int>
+                {
+                    {"Electric Input", 0 },
+                    {"Output", 0 }
+                }
+            },
+            {Gates.SMART_SWITCH, new Dictionary<string, int>
+                {
+                    {"Electric Input", 0 },
+                    {"Output", 0 }
+                }
+            },
+            {Gates.GREEN_LIGHT, new Dictionary<string, int>
+                {
+                    {"Power In", 0 },
+                    {"Passthrough", 0 }
+                }
+            },
+            {Gates.RED_LIGHT, new Dictionary<string, int>
+                {
+                    {"Power In", 0 },
+                    {"Passthrough", 0 }
+                }
+            },
+            {Gates.WHITE_LIGHT, new Dictionary<string, int>
+                {
+                    {"Power In", 0 },
+                    {"Passthrough", 0 }
+                }
+            }
+        };
+
+        /**
+         * Spawns an Entity in the World
+         *
+         * @param string prefab
+         * @param Vector3 pos
+         * @param Quaternion tor
+         */
+        public BaseEntity SpawnEntity(string prefab, Vector3 pos, Quaternion rot)
+        {
+            var entity = GameManager.server.CreateEntity(prefab, pos, rot);
+
+            var transform = entity.transform;
+            transform.position = pos;
+            transform.rotation = rot;
+
+            var eBranch = entity as ElectricalBranch;
+            if (eBranch != null)
+                eBranch.branchAmount = 10000;
+
+            var testGen = entity as ElectricGenerator;
+            if (testGen != null)
+                testGen.electricAmount = 1000000000;
+
+            entity.Spawn();
+
+            return entity;
+        }
+
+        /**
+         * Generates a random long between a min and max value
+         * 
+         * @param long min
+         * @param long max
+         * @return long
+         */
         public long LongRandom(long min=100000000000000000, long max=100000000000000050) {
             System.Random rand = new System.Random();
             byte[] buf = new byte[8];
@@ -77,6 +322,418 @@ namespace Oxide.Plugins {
             long longRand = BitConverter.ToInt64(buf, 0);
 
             return (Math.Abs(longRand % (max - min)) + min);
+        }
+    }
+
+    // BEGIND DATATYPES FOR DE-SERIALIZATION
+    class Chip : ParentHelpers {
+        public string Name;
+        public long ID;
+        public HashSet<SubChip> SubChips = new HashSet<SubChip>();
+        public HashSet<Pin> InputPins = new HashSet<Pin>();
+        public HashSet<Pin> OutputPins = new HashSet<Pin>();
+        public HashSet<Connection> Connections = new HashSet<Connection>();
+
+        public Dictionary<long, Pin> DicInputPins = new Dictionary<long, Pin>();
+        public Dictionary<long, Pin> DicOutputPins = new Dictionary<long, Pin>();
+
+        public void Init(long newId)
+        {
+            ID = newId;
+
+            foreach (Connection connection in Connections)
+            {
+                if (connection.Source.SubChipID == 0)
+                    connection.Source.SubChipID = ID;
+                if (connection.Target.SubChipID == 0)
+                    connection.Target.SubChipID = ID;
+            }
+
+            foreach (Pin pin in InputPins)
+            {
+                DicInputPins.Add(pin.ID, pin);
+            }
+            foreach (Pin pin in OutputPins)
+            {
+                DicOutputPins.Add(pin.ID, pin);
+            }
+        }
+    
+        private IOEntity LocateConnectionEntity(
+            IPlayer player,
+            ConnectionIO connection, 
+            Dictionary<string, IOEntity> pins,
+            Dictionary<string, IOEntity> electricalComponents
+        ) {
+            #if DEBUG_PINS
+            player.Reply($"PIN Identifier: {connection.SubChipID}_{connection.PinID}");
+            if(pins.ContainsKey($"{connection.SubChipID}_{connection.PinID}"))
+                player.Reply($"Found Pin {connection.PinID} in Pins");
+            else if (electricalComponents.ContainsKey(connection.SubChipID.ToString()))
+                player.Reply($"Found Pin {connection.PinID} in Electrical Components");
+            else
+                player.Reply($"Unable to find Pin {connection.PinID} in Pins or Electrical Components");
+            #endif
+            
+            return pins.ContainsKey($"{connection.SubChipID}_{connection.PinID}")
+                    ? pins[$"{connection.SubChipID}_{connection.PinID}"]
+                    : electricalComponents[connection.SubChipID.ToString()];
+        }
+
+        private void Wire(
+            IPlayer player,
+            Project project_reference,
+            Dictionary<string, Chip> chipDefinitions,
+            Dictionary<string, IOEntity> pins,
+            Dictionary<string, IOEntity> electricalComponents
+        )
+        {
+            #if DEBUG_PINS
+            player.Reply($"PIN STACK: {String.Join(" | ", pins.Keys)}");
+            #endif
+            foreach (Connection connection in Connections) {
+                var sourceEntity = LocateConnectionEntity(player, connection.Source, pins, electricalComponents);
+                var targetEntity = LocateConnectionEntity(player, connection.Target, pins, electricalComponents);
+        
+                var sourceChipId = connection.Source.SubChipID.ToString();
+                var sourcePinId  = connection.Source.PinID;
+                var targetChipId = connection.Target.SubChipID.ToString();
+                var targetPinId  = connection.Target.PinID;
+
+                var sourceGate = connection.Source.SubChipID == ID
+                                    ? Gates.OR
+                                    : string_to_gates.ContainsKey(chipDefinitions[sourceChipId].Name)
+                                        ? string_to_gates[chipDefinitions[sourceChipId].Name]
+                                        : Gates.SPLITTER;
+
+                var targetGate = connection.Target.SubChipID == ID
+                                    ? Gates.SPLITTER
+                                    : string_to_gates.ContainsKey(chipDefinitions[targetChipId].Name)
+                                        ? string_to_gates[chipDefinitions[targetChipId].Name]
+                                        : Gates.OR;
+
+                var sourceSlot = "";
+                if (sourceGate == Gates.NOT || sourceGate == Gates.AND || (sourceGate == Gates.OR && chipDefinitions[sourceChipId].Name != "OR"))
+                {
+                    sourceSlot = "Power Out";
+                }
+                else if (sourceGate == Gates.SPLITTER && chipDefinitions[sourceChipId].Name != "SPLITTER")
+                {
+                    sourceSlot = "Power Out 1";
+                }
+                else
+                {
+                    sourceSlot = chipDefinitions[sourceChipId].DicOutputPins[sourcePinId].Name;
+                }
+
+                player.Reply(chipDefinitions[targetChipId].Name);
+                player.Reply(sourcePinId.ToString());
+                player.Reply(prefab_gate_bindings[targetGate]);
+
+                var targetSlot = "";
+                if (targetGate == Gates.NOT)
+                {
+                    targetSlot = "Input A";
+                }
+                else if (targetGate == Gates.AND)
+                {
+                    targetSlot = targetPinId == 0
+                                    ? "Input A"
+                                    : "Input B";
+                }
+                else if (targetGate == Gates.OR && chipDefinitions[targetChipId].Name != "OR")
+                {
+                    targetSlot = "Input A";
+                }
+                else if (targetGate == Gates.SPLITTER && chipDefinitions[targetChipId].Name != "SPLITTER")
+                {
+                    targetSlot = "Power In";
+                }
+                else
+                {
+                    targetSlot = chipDefinitions[targetChipId].DicInputPins[targetPinId].Name;
+                }
+
+                var entitySlots = WireEntites(
+                    player,
+                    sourceEntity,
+                    sourceGate,
+                    sourceSlot,
+                    targetEntity,
+                    targetGate,
+                    targetSlot
+                );
+            }
+        }
+
+        public object[] Build(IPlayer player, JData thisInstance, Project project_reference, Vector3 startPosition, Quaternion startRotation)
+        {
+            var customChipCount = 0;
+            var chipDefinitions = new Dictionary<string, Chip>();
+            var pins = BuildPins(startPosition, startRotation); // Our Pins
+            var electricalComponents = new Dictionary<string, IOEntity>(); // Every E Component we spawned for vanilla items
+            chipDefinitions.Add(ID.ToString(), this);
+
+            #if DEBUG
+            player.Reply($"Building {Name} ({ID})");
+            #endif
+
+            // Build our SubChips for this Chip
+            foreach (SubChip chip in SubChips) {
+                // Add Chip Definition to our Dictionary
+                if (! chipDefinitions.ContainsKey(chip.ID.ToString())) {
+                    Chip chipDefinition = project_reference.ReadChip(chip.Name);
+                    if (chipDefinition != null) {
+                        chipDefinition.Init(chip.ID);
+                        chipDefinitions.Add(chip.ID.ToString(), chipDefinition);
+                    }
+                }
+
+                // Convert Chip Point into Vector3
+                var chipPoint = new Dictionary<string, float>();
+                foreach (Dictionary<string, float> point in chip.Points) {
+                    chipPoint.Add("X", point["X"]);
+                    chipPoint.Add("Y", point["Y"]);
+                }
+                
+                // Adjust our Chip Position
+                var localChipAdjustedPosition = new Vector3(startPosition.x + chipPoint["X"], startPosition.y + chipPoint["Y"], startPosition.z);
+
+                // Is Custom Chip
+                if (!string_to_gates.ContainsKey(chip.Name))
+                {
+                    Vector3 nextSpot = new Vector3(startPosition.x, startPosition.y, startPosition.z + (10 * customChipCount));
+                    var subChipDefinition = chipDefinitions[chip.ID.ToString()];
+                    var buildObjects = subChipDefinition.Build(player, thisInstance, project_reference, nextSpot, startRotation);
+
+                    // Add our SubChip Pins to our Pins List
+                    foreach (KeyValuePair<string, IOEntity> entry in buildObjects[0] as Dictionary<string, IOEntity>) {
+                        if (!pins.ContainsKey(entry.Key))
+                            pins.Add(entry.Key, entry.Value);
+                    }
+
+                    // Add our subChip definitions to our Chip Definitions
+                    foreach (KeyValuePair<string, Chip> entry in buildObjects[1] as Dictionary<string, Chip>) {
+                        if (!chipDefinitions.ContainsKey(entry.Key))
+                            chipDefinitions.Add(entry.Key, entry.Value);
+                    }
+
+                    customChipCount++;
+                    // player.Reply("HIT");
+                    // thisInstance.BindSaveSign(
+                    //     localChipAdjustedPosition,
+                    //     Picasso.Signs.WoodenSmall,
+                    //     128,
+                    //     64,
+                    //     17,
+                    //     Picasso.FontSize.Small,
+                    //     new Dictionary<string, Brush> {
+                    //         {chip.Name, Brushes.Yellow},
+                    //         {chip.ID.ToString(), Brushes.Orange}
+                    //     }
+                    // );
+                    // Put a Sign in the place of the subchips spot
+                    // Interface.CallHook(
+                    //     "MakeSign",
+                    //     localChipAdjustedPosition,
+                    //     Picasso.Signs.WoodenSmall,
+                    //     128,
+                    //     64,
+                    //     17,
+                    //     Picasso.FontSize.Small,
+                    //     new Dictionary<string, Brush> {
+                    //         {chip.Name, Brushes.Yellow},
+                    //         {chip.ID.ToString(), Brushes.Orange}
+                    //     }
+                    // );
+                }
+                // If NOT || AND (DSL reserved) we spawn them as vanilla items
+                else if (string_to_gates[chip.Name] == Gates.AND || string_to_gates[chip.Name] == Gates.NOT) {
+                    var chipDefinition = new Chip{
+                        Name = chip.Name,
+                        InputPins = new HashSet<Pin>(),
+                        OutputPins = new HashSet<Pin>(),
+                        Connections = new HashSet<Connection>()
+                    };
+                    chipDefinition.Init(chip.ID);
+                    chipDefinitions.Add(chip.ID.ToString(), chipDefinition);
+                    
+
+                    if (string_to_gates[chip.Name] == Gates.NOT) {
+                        // Spawn our Pin
+                        electricalComponents.Add(chip.ID.ToString(), BuildNot(player, localChipAdjustedPosition, startRotation));
+                    } else {
+                        // Spawn our Pin
+                        electricalComponents.Add(chip.ID.ToString(), SpawnEntity(
+                            prefab_gate_bindings[Gates.AND],
+                            localChipAdjustedPosition,
+                            startRotation
+                        ) as IOEntity);
+                    
+                    }
+                }
+                // Normal Electrical Components
+                else if (string_to_gates.ContainsKey(chip.Name)) {
+                    electricalComponents.Add(chip.ID.ToString(), SpawnEntity(
+                        prefab_gate_bindings[string_to_gates[chip.Name]],
+                        localChipAdjustedPosition,
+                        startRotation
+                    ) as IOEntity);
+                }
+                // Build Custom Chips Recursively
+                else {
+                    throw new Exception($"Unable to handle chip {chip.Name} ({chip.ID})");
+                }
+            }
+
+            Wire(player, project_reference, chipDefinitions, pins, electricalComponents);
+
+            return new object[]{
+                pins,
+                chipDefinitions
+            };
+        }
+
+        private IOEntity BuildNot(IPlayer player, Vector3 localChipAdjustedPosition, Quaternion startRotation)
+        {
+            var xor_switch = SpawnEntity(
+                prefab_gate_bindings[Gates.XOR],
+                localChipAdjustedPosition,
+                startRotation
+            ) as IOEntity;
+
+            var test_generator = SpawnEntity(
+                prefab_gate_bindings[Gates.TEST_GENERATOR],
+                new Vector3(localChipAdjustedPosition.x, localChipAdjustedPosition.y, localChipAdjustedPosition.z + 3),
+                startRotation
+            ) as IOEntity;
+
+            WireEntites(
+                player,
+                test_generator,
+                Gates.TEST_GENERATOR,
+                "Power Output 1",
+                xor_switch,
+                Gates.XOR,
+                "Input B"
+            );
+    
+            return xor_switch;
+        }
+
+        /**
+         * Spawns Our Pins in the World
+         *
+         * @param string prefab
+         * @param Vector3 pos
+         * @param Quaternion tor
+         * @return Dictionary<string, IOEntity>
+         */
+        public Dictionary<string, IOEntity> BuildPins(Vector3 startPosition, Quaternion startRotation) {
+
+            var pinEntities = new Dictionary<string, IOEntity>();
+
+            // Iterate over our Pin List
+            foreach (Pin pin in OutputPins) {
+                // Spawn our Pin
+                pinEntities.Add($"{ID}_{pin.ID}", SpawnEntity(
+                    prefab_gate_bindings[Gates.SPLITTER],
+                    new Vector3(startPosition.x - 5, startPosition.y + pin.PositionY, startPosition.z),
+                    startRotation
+                ) as IOEntity);
+            }
+
+            foreach (Pin pin in InputPins) {
+                // Spawn our Pin
+                pinEntities.Add($"{ID}_{pin.ID}", SpawnEntity(
+                    prefab_gate_bindings[Gates.OR],
+                    new Vector3(startPosition.x + 20, startPosition.y + pin.PositionY, startPosition.z),
+                    startRotation
+                ) as IOEntity);
+            }
+
+            return pinEntities;
+        }
+
+        /*
+         * Wires two Entities together
+         * returns the IOSlots that were wired
+         *
+         * @param IOEntity source
+         * @param Gates source_binding
+         * @param string source_slot
+         * @param IOEntity target
+         * @param Gates target_binding
+         * @param string target_slot
+         * @return IOEntity.IOSlot[]
+        */
+        public IOEntity.IOSlot[] WireEntites(
+            IPlayer player,
+            IOEntity source,
+            Gates source_binding,
+            string source_slot, 
+            IOEntity target,
+            Gates target_binding,
+            string target_slot
+        ) {
+            // Get Indexes for IO Slots
+            #if DEBUG
+            player.Reply($"Source: {source_binding} | {source_slot}");
+            player.Reply($"Target: {target_binding} | {target_slot}");
+            #endif
+
+            int sourceIndex = io_definitions[source_binding == Gates.NOT ? Gates.XOR : source_binding][source_slot];
+            int targetIndex = io_definitions[target_binding == Gates.NOT ? Gates.XOR : target_binding][target_slot];
+
+            // Define Input and Output Slots
+            var inputSlot = target.inputs[targetIndex] ;
+            var outputSlot = source.outputs[sourceIndex];
+
+            // Setup Input Slot
+            if (inputSlot.connectedTo == null)
+                inputSlot.connectedTo = new IOEntity.IORef();
+            
+            inputSlot.connectedTo.Set(source);
+            inputSlot.connectedToSlot = sourceIndex;
+            inputSlot.connectedTo.Init();
+
+            // Setup Output Slot
+            if (outputSlot.connectedTo == null)
+                outputSlot.connectedTo = new IOEntity.IORef();
+            
+            outputSlot.connectedTo.Set(target);
+            outputSlot.connectedToSlot = targetIndex;
+            outputSlot.connectedTo.Init(); 
+
+            // Setup Wire - TODO FIXED THIS BROKEN SHIT (COULD BE FIXED SHIT NOW)
+            outputSlot.wireColour = (WireTool.WireColour)0;
+            outputSlot.type = (IOEntity.IOType)0;
+            var lineList = new List<Vector3>();
+            lineList.Add(source.transform.position);
+            lineList.Add(target.transform.position);
+            source.outputs[sourceIndex].linePoints = lineList.ToArray();
+
+            // Update source and Target
+            source.MarkDirtyForceUpdateOutputs();
+            source.SendNetworkUpdate();
+            target.SendNetworkUpdate();
+
+            return new IOEntity.IOSlot[2]{inputSlot, outputSlot};
+        }
+
+        public string ToString()
+        {
+            string message = $"{Name} \n SubChips:\n";
+            foreach (SubChip chip in SubChips) {
+                message += $"{chip.ToString()}\n";
+            }
+
+            message += "Connections\n";
+            foreach (Connection connection in Connections) {
+                message += $"{connection.ToString()}\n";
+            }
+
+            return message;
         }
     }
 
@@ -113,72 +770,9 @@ namespace Oxide.Plugins {
         }
     }
 
-    class Chip : ParentHelpers {
-        public string Name;
-        public HashSet<SubChip> SubChips = new HashSet<SubChip>();
-        public HashSet<Pin> InputPins = new HashSet<Pin>();
-        public HashSet<Pin> OutputPins = new HashSet<Pin>();
-        public HashSet<Connection> Connections = new HashSet<Connection>();
-
-        public void generateNewIds() 
-        {
-            // Dictionary<long, Chip> chip_definitions = new Dictionary<string, Chip>();
-            // Dictionary<long, long> inputPinIdMaps = new Dictionary<long, long>();
-            // Dictionary<long, long> outputPinIdMaps = new Dictionary<long, long>();
-            // Dictionary<long, long> subChipIdMaps = new Dictionary<long, long>();
-
-            // // Generate new Pin Ids (Input & Output)
-            // for (int i = 0; i < 2; i++)
-            // {
-            //     var iter = i == 0 ? InputPins : OutputPins;
-            //     foreach (Pin pin in iter) {
-            //         long newId = LongRandom();
-            //         if (i == 0)
-            //             inputPinIdMaps.Add(pin.ID, newId);
-            //         else
-            //             outputPinIdMaps.Add(pin.ID, newId);
-            //         pin.ID = newId;
-            //     }
-            // }
-
-            // foreach (SubChip subChip in SubChips)
-            // {
-                
-            // }
-
-            // foreach (Connection connection in Connections)
-            // {
-            //     // Generate new Connection Ids
-            //     connection.Source.PinID = inputPinIdMaps[connection.Source.PinID];
-            //     connection.Target.PinID = outputPinIdMaps[connection.Target.PinID];
-
-            //     // Generate new SubChip Ids
-            //     if (connection.Source.SubChipID > 0)
-            //         connection.Source.SubChipID = subChipIdMaps[connection.Source.SubChipID];
-
-            //     if (connection.Target.SubChipID > 0)
-            //         connection.Target.SubChipID = subChipIdMaps[connection.Target.SubChipID];
-            // }
-        }
-
-        public string ToString()
-        {
-            string message = $"{Name} \n SubChips:\n";
-            foreach (SubChip chip in SubChips) {
-                message += $"{chip.ToString()}\n";
-            }
-
-            message += "Connections\n";
-            foreach (Connection connection in Connections) {
-                message += $"{connection.ToString()}\n";
-            }
-
-            return message;
-        }
-    }
-
     class SubChip {
         public string Name;
+
         public long ID;
 
         public HashSet<Dictionary<string, float>> Points;
@@ -186,6 +780,27 @@ namespace Oxide.Plugins {
         public string ToString()
         {
             return $"{Name} ({ID})";
+        }
+
+        public Gates GetGate()
+        {
+            var dic = new Dictionary<string, Gates> {
+                { "SPLITTER", Gates.SPLITTER },
+                { "BLOCKER", Gates.BLOCKER },
+                { "MEMORY_CELL", Gates.MEMORY_CELL },
+                { "E_BRANCH", Gates.E_BRANCH },
+                { "AND", Gates.AND },
+                { "OR", Gates.OR },
+                { "XOR", Gates.XOR },
+                { "TEST_GENERATOR", Gates.TEST_GENERATOR },
+                { "SIMPLE_SWITCH", Gates.SIMPLE_SWITCH },
+                { "SMART_SWITCH", Gates.SMART_SWITCH },
+                { "GREEN_LIGHT", Gates.GREEN_LIGHT },
+                { "RED_LIGHT", Gates.RED_LIGHT },
+                { "WHITE_LIGHT", Gates.WHITE_LIGHT }
+            };
+
+            return dic[Name];
         }
     }
 
