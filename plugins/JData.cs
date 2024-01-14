@@ -468,7 +468,7 @@ namespace Oxide.Plugins {
 
         public object[] Build(IPlayer player, JData thisInstance, Project project_reference, Vector3 startPosition, Quaternion startRotation)
         {
-            var customChipCount = 0;
+            var customChipCount = 1;
             var chipDefinitions = new Dictionary<string, Chip>();
             var pins = BuildPins(startPosition, startRotation); // Our Pins
             var electricalComponents = new Dictionary<string, IOEntity>(); // Every E Component we spawned for vanilla items
@@ -502,7 +502,7 @@ namespace Oxide.Plugins {
                 // Is Custom Chip
                 if (!string_to_gates.ContainsKey(chip.Name))
                 {
-                    Vector3 nextSpot = new Vector3(startPosition.x, startPosition.y, startPosition.z + (10 * customChipCount));
+                    Vector3 nextSpot = new Vector3(startPosition.x, startPosition.y + (15 * customChipCount), startPosition.z);
                     var subChipDefinition = chipDefinitions[chip.ID.ToString()];
                     var buildObjects = subChipDefinition.Build(player, thisInstance, project_reference, nextSpot, startRotation);
 
@@ -638,7 +638,7 @@ namespace Oxide.Plugins {
                 // Spawn our Pin
                 pinEntities.Add($"{ID}_{pin.ID}", SpawnEntity(
                     prefab_gate_bindings[Gates.SPLITTER],
-                    new Vector3(startPosition.x - 5, startPosition.y + pin.PositionY, startPosition.z),
+                    new Vector3(startPosition.x + 12, startPosition.y + pin.PositionY, startPosition.z),
                     startRotation
                 ) as IOEntity);
             }
@@ -647,7 +647,7 @@ namespace Oxide.Plugins {
                 // Spawn our Pin
                 pinEntities.Add($"{ID}_{pin.ID}", SpawnEntity(
                     prefab_gate_bindings[Gates.OR],
-                    new Vector3(startPosition.x + 20, startPosition.y + pin.PositionY, startPosition.z),
+                    new Vector3(startPosition.x - 7, startPosition.y + pin.PositionY, startPosition.z),
                     startRotation
                 ) as IOEntity);
             }
