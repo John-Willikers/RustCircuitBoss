@@ -45,7 +45,7 @@ namespace Oxide.Plugins {
             GenericPosition position = player.Position();
 
             chip.Init(0);
-            chip.Build(player, this, loaded_project, new Vector3(position.X, position.Y, position.Z), new Quaternion(1, 1, 1, 1));
+            chip.Build(player, this, loaded_project, new Vector3(position.X, position.Y, position.Z), new Quaternion(1, 1, 0, 0));
         }
 
         public Project AssignProjectToUser(string uId, string project_name)
@@ -81,10 +81,11 @@ namespace Oxide.Plugins {
                     : null;
         }
 
-        public void BindSaveSign(Vector3 position, Picasso.Signs sign_type, int width, int height, int yOffset, Picasso.FontSize fontSize, Dictionary<string, Brush> lines)
+        public void BindSaveSign(Vector3 position, Quaternion rotation, Picasso.Signs sign_type, int width, int height, int yOffset, Picasso.FontSize fontSize, Dictionary<string, Brush> lines)
         {
             Picasso.SpawnSign(
                 position,
+                rotation,
                 sign_type,
                 width,
                 height,
@@ -437,7 +438,8 @@ namespace Oxide.Plugins {
             #endif
 
             thisInstance.BindSaveSign(
-                new Vector3(startPosition.x + 14, startPosition.y, startPosition.z),
+                new Vector3(startPosition.x + 7, startPosition.y + 7, startPosition.z),
+                new Quaternion(0, 1, 0, 0),
                 Picasso.Signs.WoodenSmall,
                 128,
                 64,
@@ -496,6 +498,7 @@ namespace Oxide.Plugins {
                     // player.Reply("HIT");
                     thisInstance.BindSaveSign(
                         localChipAdjustedPosition,
+                        new Quaternion(0, 1, 0, 0),
                         Picasso.Signs.WoodenSmall,
                         128,
                         64,
@@ -607,7 +610,7 @@ namespace Oxide.Plugins {
                 // Spawn our Pin
                 pinEntities.Add($"{ID}_{pin.ID}", SpawnEntity(
                     prefab_gate_bindings[Gates.OR],
-                    new Vector3(startPosition.x - 7, startPosition.y + pin.PositionY, startPosition.z),
+                    new Vector3(startPosition.x - 10, startPosition.y + pin.PositionY, startPosition.z),
                     startRotation
                 ) as IOEntity);
             }
@@ -666,17 +669,19 @@ namespace Oxide.Plugins {
             outputSlot.connectedTo.Init(); 
 
             // Setup Wire - TODO FIXED THIS BROKEN SHIT (COULD BE FIXED SHIT NOW)
-            outputSlot.wireColour = (WireTool.WireColour)0;
-            outputSlot.type = (IOEntity.IOType)0;
-            var lineList = new List<Vector3>();
-            lineList.Add(source.transform.position);
-            lineList.Add(target.transform.position);
-            source.outputs[sourceIndex].linePoints = lineList.ToArray();
+            outputSlot.wireColour = WireTool.WireColour.Default;
+            outputSlot.type = IOEntity.IOType.Electric;
+
+            var lineList = new List<Vector3>(){
+                source.transform.position,
+                target.transform.position
+            };
+            outputSlot.linePoints = lineList.ToArray();
 
             // Update source and Target
             source.MarkDirtyForceUpdateOutputs();
             source.SendNetworkUpdate();
-            target.SendNetworkUpdate();
+            // target.SendNetworkUpdate(); - Might be redundant
 
             return new IOEntity.IOSlot[2]{inputSlot, outputSlot};
         }

@@ -26,10 +26,10 @@ namespace Oxide.Plugins
             "assets/prefabs/deployable/signs/sign.small.wood.prefab"
         };
 
-        public void SpawnSign(Vector3 position, Signs sign_type, int width, int height, int yOffset, FontSize fontSize, Dictionary<string, Brush> lines)
+        public void SpawnSign(Vector3 position, Quaternion rotation, Signs sign_type, int width, int height, int yOffset, FontSize fontSize, Dictionary<string, Brush> lines)
         {
             // Create a Sign
-            var sign = GameManager.server.CreateEntity(SignBindings[(int) sign_type], position, new Quaternion(1, 1 , 1, 1)) as Signage;
+            var sign = GameManager.server.CreateEntity(SignBindings[(int) sign_type], position, rotation) as Signage;
             sign.Spawn();
             sign.SetFlag(BaseEntity.Flags.Locked, true);
             sign.SendNetworkUpdateImmediate();

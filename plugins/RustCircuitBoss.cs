@@ -63,6 +63,7 @@ namespace Oxide.Plugins
 
             Picasso.SpawnSign(
                 new Vector3(position.X, position.Y, position.Z + 1),
+                new Quaternion(0, 0, 0, 0),
                 Picasso.Signs.WoodenSmall,
                 128,
                 64,
