@@ -22,7 +22,7 @@ namespace Oxide.Plugins
             WoodenSmall = 0,
         }
 
-        private string[] SignBindings = new string[] {
+        public static string[] SignBindings = new string[] {
             "assets/prefabs/deployable/signs/sign.small.wood.prefab"
         };
 
