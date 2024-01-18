@@ -1,26 +1,28 @@
 // Requires: Picasso
 #define DEBUG
 #define DISABLED_DEBUG_PINS
-using System;
 using System.Collections.Generic;
+using System;
 using System.Drawing;
-using static System.Random;
+using System.IO;
+using Facepunch;
 using Oxide.Core;
-using Oxide.Core.Plugins;
 using Oxide.Core.Libraries.Covalence;
+using Oxide.Core.Plugins;
+using Oxide.Game.Rust.Cui;
+using Oxide.Game.Rust.Libraries.Covalence;
 using UnityEngine;
 namespace Oxide.Plugins {
 
     [Info("JData", "JohnWillikers", "0.1.0")]
     [Description("Data Stuff")]
-    class JData : RustPlugin {
+    class JData : CovalencePlugin {
         // Begin Plugin References
        [PluginReference] 
         private Picasso Picasso;
         // End Plugin References
         private DataFileSystem data_dir = new DataFileSystem($"{Interface.Oxide.DataDirectory}");
         private Dictionary<string, Project> user_loaded_projects = new Dictionary<string, Project>(); 
-
         public void SetNewDataDir(string name)
         {
             user_loaded_projects.Clear();
@@ -46,6 +48,15 @@ namespace Oxide.Plugins {
 
             chip.Init(0);
             chip.Build(player, this, loaded_project, new Vector3(position.X, position.Y, position.Z), new Quaternion(1, 1, 0, 0));
+        }
+
+        [Command("c_clear")]
+         private void ProjectClearCommand(IPlayer player, string command, string[] args)
+        {   
+            player.Reply("Clearing");
+            Project project = GetUserProject(player.Id.ToString());
+            project.ClearCommonEntities();
+            player.Reply("Done Clearing");
         }
 
         public Project AssignProjectToUser(string uId, string project_name)
@@ -124,7 +135,8 @@ namespace Oxide.Plugins {
         GREEN_LIGHT = 10,
         RED_LIGHT = 11,
         WHITE_LIGHT = 12,
-        NOT = 13
+        NOT = 13,
+        TIMER = 14
     }
     class ParentHelpers {
         // Prefabs
@@ -142,7 +154,8 @@ namespace Oxide.Plugins {
             { Gates.GREEN_LIGHT, "assets/prefabs/misc/permstore/industriallight/industrial.wall.lamp.green.deployed.prefab" },
             { Gates.RED_LIGHT, "assets/prefabs/misc/permstore/industriallight/industrial.wall.lamp.red.deployed.prefab" },
             { Gates.WHITE_LIGHT, "assets/prefabs/misc/permstore/industriallight/industrial.wall.lamp.deployed.prefab" },
-            { Gates.NOT, "na"}
+            { Gates.NOT, "na"},
+            { Gates.TIMER, "assets/prefabs/deployable/playerioents/timers/timer.prefab"}
         };
         // Strings
         public Dictionary<string, Gates> string_to_gates = new Dictionary<string, Gates> {
@@ -159,7 +172,8 @@ namespace Oxide.Plugins {
             { "GREEN_LIGHT", Gates.GREEN_LIGHT },
             { "RED_LIGHT", Gates.RED_LIGHT },
             { "WHITE_LIGHT", Gates.WHITE_LIGHT },
-            { "NOT", Gates.NOT }
+            { "NOT", Gates.NOT },
+            { "TIMER", Gates.TIMER }
         };
         // IO Definitions
         public Dictionary<Gates, Dictionary<string,int>> io_definitions = new Dictionary<Gates, Dictionary<string, int>>
@@ -253,8 +267,26 @@ namespace Oxide.Plugins {
                     {"Power In", 0 },
                     {"Passthrough", 0 }
                 }
-            }
+            },
+            {Gates.TIMER, new Dictionary<string, int>
+                {
+                    {"Electric Input", 0 },
+                    {"Toggle On", 1 },
+                    {"Output", 0}
+                }
+            },
         };
+
+        public void ClearCommonEntities()
+        {
+            foreach (KeyValuePair<Gates, string> entry in prefab_gate_bindings) {
+                ConsoleSystem.Run(ConsoleSystem.Option.Server.Quiet(), $"del {entry.Value}");
+            }
+
+            foreach (string prefab in Picasso.SignBindings) {
+                ConsoleSystem.Run(ConsoleSystem.Option.Server.Quiet(), $"del {prefab}");
+            }
+        }
 
         /**
          * Spawns an Entity in the World
@@ -278,6 +310,12 @@ namespace Oxide.Plugins {
             var testGen = entity as ElectricGenerator;
             if (testGen != null)
                 testGen.electricAmount = 1000000000;
+
+            var timerSwitch = entity as TimerSwitch;
+            if (timerSwitch != null)
+            {
+                timerSwitch.timerLength = 2;
+            }
 
             entity.Spawn();
 
@@ -352,9 +390,22 @@ namespace Oxide.Plugins {
             #if DEBUG_PINS
             player.Reply($"PIN STACK: {String.Join(" | ", pins.Keys)}");
             #endif
-            foreach (Connection connection in Connections) {
+
+            HashSet<object[]> pinsToWire = new HashSet<object[]>();
+            Dictionary<string, Vector3> duplicatePinPositions = new Dictionary<string, Vector3>();
+            Dictionary<string, int> duplicatePins = new Dictionary<string, int>();
+
+            foreach (Connection connection in Connections) {    
                 var sourceEntity = LocateConnectionEntity(player, connection.Source, pins, electricalComponents);
                 var targetEntity = LocateConnectionEntity(player, connection.Target, pins, electricalComponents);
+                var duplicatePinId = $"{connection.Source.SubChipID.ToString()}_{connection.Source.PinID.ToString()}";
+
+                if (!duplicatePins.ContainsKey(duplicatePinId)) {
+                    duplicatePinPositions.Add(duplicatePinId, sourceEntity.transform.position);
+                    duplicatePins.Add(duplicatePinId, 0);
+                } else {
+                    duplicatePins[duplicatePinId]++;
+                }
         
                 var sourceChipId = connection.Source.SubChipID.ToString();
                 var sourcePinId  = connection.Source.PinID;
@@ -405,9 +456,11 @@ namespace Oxide.Plugins {
                     );
                 }
 
+                #if DEBUG_PINS
                 player.Reply(chipDefinitions[targetChipId].Name);
                 player.Reply(sourcePinId.ToString());
                 player.Reply(prefab_gate_bindings[targetGate]);
+                #endif
 
                 var targetSlot = "";
                 if (targetGate == Gates.NOT)
@@ -433,14 +486,107 @@ namespace Oxide.Plugins {
                     targetSlot = chipDefinitions[targetChipId].DicInputPins[targetPinId].Name;
                 }
 
-                var entitySlots = WireEntites(
+                pinsToWire.Add(
+                    new object[7] {duplicatePinId, sourceEntity, sourceGate, sourceSlot, targetEntity, targetGate, targetSlot}
+                );
+            }
+
+            Dictionary<string, List<IOEntity>> duplicatePinsConnector = new Dictionary<string, List<IOEntity>>();
+
+            foreach (KeyValuePair<string, int> pin in duplicatePins) {
+                    player.Reply($"{pin.Key} PIN COUNT: {pin.Value.ToString()}");
+                    if (pin.Value == 0)
+                        continue;
+
+                    Vector3 startPosition = new Vector3(duplicatePinPositions[pin.Key].x + 1, duplicatePinPositions[pin.Key].y, duplicatePinPositions[pin.Key].z);
+
+                    if (pin.Value == 1) {
+                        duplicatePinsConnector.Add(pin.Key, new List<IOEntity> {SpawnEntity(
+                            prefab_gate_bindings[Gates.SPLITTER],
+                            startPosition,
+                            new Quaternion(1, 1, 0, 0)
+                        
+                        )as IOEntity});
+                        
+                        continue;
+                    }
+
+                    List<IOEntity> splitters = new List<IOEntity>();
+
+                    Vector3 multiSplitterPos =  new Vector3(startPosition.x, startPosition.y + 1, startPosition.z);
+                    for (int i = 1; i <= Math.Ceiling((double) pin.Value / 2); i++) {
+                        multiSplitterPos = new Vector3(multiSplitterPos.x, multiSplitterPos.y - 1, multiSplitterPos.z);
+                        splitters.Add(SpawnEntity(
+                            prefab_gate_bindings[Gates.SPLITTER],
+                            multiSplitterPos,
+                            new Quaternion(1, 1, 0, 0)
+                        ) as IOEntity);
+
+                        if (i > 1) {
+                            WireEntites(
+                                player,
+                                splitters[i - 2],
+                                Gates.SPLITTER,
+                                "Power Out 3",
+                                splitters[i - 1],
+                                Gates.SPLITTER,
+                                "Power In"
+                            );
+                        }
+                    }
+
+                    duplicatePinsConnector.Add(pin.Key, splitters);
+                }
+
+            Dictionary<string, int> timesConnected = new Dictionary<string, int>();
+            foreach (object[] wireIntructions in pinsToWire)
+            {
+                var duplicatePinId = wireIntructions[0] as string;
+
+                if (duplicatePins.ContainsKey(duplicatePinId) && duplicatePins[duplicatePinId] > 0) {
+                    player.Reply("HIT AA");
+                    WireEntites(
+                        player,
+                        wireIntructions[1] as IOEntity,
+                        (Gates) wireIntructions[2],
+                        wireIntructions[3] as string,
+                        duplicatePinsConnector[duplicatePinId][0],
+                        Gates.SPLITTER,
+                        "Power In"
+                    );
+                    player.Reply("HIT BB");
+
+                    if (! timesConnected.ContainsKey(duplicatePinId))
+                        timesConnected.Add(duplicatePinId, 2);
+                    else
+                        timesConnected[duplicatePinId]++;
+
+                    int duplicatePinsConnectorIndex = timesConnected[duplicatePinId] / 2  == 0 
+                                                        ? 0
+                                                        : (int) (Math.Floor((float) (timesConnected[duplicatePinId] / 2)) - 1);
+                    player.Reply($"HIT CC {duplicatePinsConnectorIndex} | {duplicatePinsConnector[duplicatePinId].Count}");
+                    WireEntites(
+                        player,
+                        duplicatePinsConnector[duplicatePinId][duplicatePinsConnectorIndex],
+                        Gates.SPLITTER,
+                        timesConnected[duplicatePinId] % 2 == 0 ? "Power Out 1" : "Power Out 2",
+                        wireIntructions[4] as IOEntity,
+                        (Gates) wireIntructions[5],
+                        wireIntructions[6] as string
+                    );
+
+                    player.Reply($"HIT DD");
+                    continue;
+                }
+
+                WireEntites(
                     player,
-                    sourceEntity,
-                    sourceGate,
-                    sourceSlot,
-                    targetEntity,
-                    targetGate,
-                    targetSlot
+                    wireIntructions[1] as IOEntity,
+                    (Gates) wireIntructions[2],
+                    wireIntructions[3] as string,
+                    wireIntructions[4] as IOEntity,
+                    (Gates) wireIntructions[5],
+                    wireIntructions[6] as string
                 );
             }
         }
@@ -458,7 +604,7 @@ namespace Oxide.Plugins {
             #endif
 
             thisInstance.BindSaveSign(
-                new Vector3(startPosition.x + 7, startPosition.y + 7, startPosition.z),
+                new Vector3(startPosition.x + 2, startPosition.y + 5.5f, startPosition.z),
                 new Quaternion(0, 1, 0, 0),
                 Picasso.Signs.WoodenSmall,
                 128,
@@ -509,14 +655,11 @@ namespace Oxide.Plugins {
                             pins.Add(entry.Key, entry.Value);
                     }
 
-                    // Add our subChip definitions to our Chip Definitions
-                    foreach (KeyValuePair<string, Chip> entry in buildObjects[1] as Dictionary<string, Chip>) {
-                        if (!chipDefinitions.ContainsKey(entry.Key))
-                            chipDefinitions.Add(entry.Key, entry.Value);
-                    }
+                    Chip subChipInnerDefintion = buildObjects[1] as Chip;
+                    if (!chipDefinitions.ContainsKey(subChipInnerDefintion.ID.ToString()))
+                        chipDefinitions.Add(subChipInnerDefintion.ID.ToString(), subChipInnerDefintion);
 
                     customChipCount++;
-                    // player.Reply("HIT");
                     thisInstance.BindSaveSign(
                         localChipAdjustedPosition,
                         new Quaternion(0, 1, 0, 0),
@@ -575,7 +718,7 @@ namespace Oxide.Plugins {
 
             return new object[]{
                 pins,
-                chipDefinitions
+                chipDefinitions[ID.ToString()]
             };
         }
 
@@ -623,7 +766,7 @@ namespace Oxide.Plugins {
                 // Spawn our Pin
                 pinEntities.Add($"{ID}_{pin.ID}", SpawnEntity(
                     prefab_gate_bindings[Gates.SPLITTER],
-                    new Vector3(startPosition.x + 12, startPosition.y + pin.PositionY, startPosition.z),
+                    new Vector3(startPosition.x + 8, startPosition.y + pin.PositionY, startPosition.z),
                     startRotation
                 ) as IOEntity);
             }
@@ -662,7 +805,7 @@ namespace Oxide.Plugins {
             string target_slot
         ) {
             // Get Indexes for IO Slots
-            #if DEBUG
+            #if DEBUG_PINS
             player.Reply($"Source: {source_binding} | {source_slot}");
             player.Reply($"Target: {target_binding} | {target_slot}");
             #endif
@@ -791,7 +934,7 @@ namespace Oxide.Plugins {
         }
     }
 
-    class Project {
+    class Project : ParentHelpers {
         public string ProjectName;
         public HashSet<string> AllCreatedChips = new HashSet<string>();
 
