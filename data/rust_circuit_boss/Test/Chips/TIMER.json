@@ -1,0 +1,110 @@
+{
+  "Name": "TIMER",
+  "Colour": "#3B3757",
+  "InputPins": [
+    {
+      "Name": "Electric Input",
+      "ID": 1304371940,
+      "PositionY": 0.759259462,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "Toggle On",
+      "ID": 1028045451,
+      "PositionY": -0.990740657,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "OutputPins": [
+    {
+      "Name": "Output",
+      "ID": 1800473786,
+      "PositionY": 0.6388891,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "SubChips": [
+    {
+      "Name": "OR",
+      "ID": 1172642616,
+      "Points": [
+        {
+          "X": -5.69444466,
+          "Y": -0.07407397
+        }
+      ],
+      "Data": null
+    }
+  ],
+  "Connections": [
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 1028045451
+      },
+      "Target": {
+        "PinType": 3,
+        "SubChipID": 1172642616,
+        "PinID": 1564549472
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": -0.990740657
+        },
+        {
+          "X": -6.14444447,
+          "Y": -0.194073975
+        }
+      ],
+      "ColourThemeName": "Red"
+    },
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 1304371940
+      },
+      "Target": {
+        "PinType": 3,
+        "SubChipID": 1172642616,
+        "PinID": 1979746457
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": 0.759259462
+        },
+        {
+          "X": -6.14444447,
+          "Y": 0.045926027
+        }
+      ],
+      "ColourThemeName": "Red"
+    },
+    {
+      "Source": {
+        "PinType": 4,
+        "SubChipID": 1172642616,
+        "PinID": 1023024589
+      },
+      "Target": {
+        "PinType": 2,
+        "SubChipID": 0,
+        "PinID": 1800473786
+      },
+      "WirePoints": [
+        {
+          "X": -5.244445,
+          "Y": -0.07407397
+        },
+        {
+          "X": 7.837778,
+          "Y": 0.6388891
+        }
+      ],
+      "ColourThemeName": "Red"
+    }
+  ]
+}
