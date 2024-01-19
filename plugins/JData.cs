@@ -494,7 +494,6 @@ namespace Oxide.Plugins {
             Dictionary<string, List<IOEntity>> duplicatePinsConnector = new Dictionary<string, List<IOEntity>>();
 
             foreach (KeyValuePair<string, int> pin in duplicatePins) {
-                    player.Reply($"{pin.Key} PIN COUNT: {pin.Value.ToString()}");
                     if (pin.Value == 0)
                         continue;
 
@@ -539,54 +538,54 @@ namespace Oxide.Plugins {
                 }
 
             Dictionary<string, int> timesConnected = new Dictionary<string, int>();
-            foreach (object[] wireIntructions in pinsToWire)
+            foreach (object[] wireInstructions in pinsToWire)
             {
-                var duplicatePinId = wireIntructions[0] as string;
+                var duplicatePinId = wireInstructions[0] as string;
 
                 if (duplicatePins.ContainsKey(duplicatePinId) && duplicatePins[duplicatePinId] > 0) {
-                    player.Reply("HIT AA");
                     WireEntites(
                         player,
-                        wireIntructions[1] as IOEntity,
-                        (Gates) wireIntructions[2],
-                        wireIntructions[3] as string,
+                        wireInstructions[1] as IOEntity,
+                        (Gates) wireInstructions[2],
+                        wireInstructions[3] as string,
                         duplicatePinsConnector[duplicatePinId][0],
                         Gates.SPLITTER,
                         "Power In"
                     );
-                    player.Reply("HIT BB");
 
                     if (! timesConnected.ContainsKey(duplicatePinId))
                         timesConnected.Add(duplicatePinId, 2);
                     else
                         timesConnected[duplicatePinId]++;
 
-                    int duplicatePinsConnectorIndex = timesConnected[duplicatePinId] / 2  == 0 
+                    int duplicatePinsConnectorIndex = timesConnected[duplicatePinId] / 2  == 1 
                                                         ? 0
                                                         : (int) (Math.Floor((float) (timesConnected[duplicatePinId] / 2)) - 1);
-                    player.Reply($"HIT CC {duplicatePinsConnectorIndex} | {duplicatePinsConnector[duplicatePinId].Count}");
+
+                    if (duplicatePinsConnector[duplicatePinId].Count == 1)
+                        duplicatePinsConnectorIndex = 0;
+
                     WireEntites(
                         player,
                         duplicatePinsConnector[duplicatePinId][duplicatePinsConnectorIndex],
                         Gates.SPLITTER,
                         timesConnected[duplicatePinId] % 2 == 0 ? "Power Out 1" : "Power Out 2",
-                        wireIntructions[4] as IOEntity,
-                        (Gates) wireIntructions[5],
-                        wireIntructions[6] as string
+                        wireInstructions[4] as IOEntity,
+                        (Gates) wireInstructions[5],
+                        wireInstructions[6] as string
                     );
 
-                    player.Reply($"HIT DD");
                     continue;
                 }
 
                 WireEntites(
                     player,
-                    wireIntructions[1] as IOEntity,
-                    (Gates) wireIntructions[2],
-                    wireIntructions[3] as string,
-                    wireIntructions[4] as IOEntity,
-                    (Gates) wireIntructions[5],
-                    wireIntructions[6] as string
+                    wireInstructions[1] as IOEntity,
+                    (Gates) wireInstructions[2],
+                    wireInstructions[3] as string,
+                    wireInstructions[4] as IOEntity,
+                    (Gates) wireInstructions[5],
+                    wireInstructions[6] as string
                 );
             }
         }
@@ -642,6 +641,21 @@ namespace Oxide.Plugins {
                 // Is Custom Chip
                 if (!string_to_gates.ContainsKey(chip.Name))
                 {
+                    thisInstance.BindSaveSign(
+                        localChipAdjustedPosition,
+                        new Quaternion(0, 1, 0, 0),
+                        Picasso.Signs.WoodenSmall,
+                        128,
+                        64,
+                        17,
+                        Picasso.FontSize.Small,
+                        new Dictionary<string, Brush> {
+                            {chip.Name, Brushes.Yellow},
+                            {chip.ID.ToString(), Brushes.Orange}
+                        },
+                        System.Drawing.Color.Black
+                    );
+
                     Vector3 nextSpot = new Vector3(startPosition.x, startPosition.y, startPosition.z + (15 * customChipCount));
                     if (!depthShouldBeZOrY) {
                         nextSpot = new Vector3(startPosition.x, startPosition.y + (15 * customChipCount), startPosition.z);
@@ -660,20 +674,6 @@ namespace Oxide.Plugins {
                         chipDefinitions.Add(subChipInnerDefintion.ID.ToString(), subChipInnerDefintion);
 
                     customChipCount++;
-                    thisInstance.BindSaveSign(
-                        localChipAdjustedPosition,
-                        new Quaternion(0, 1, 0, 0),
-                        Picasso.Signs.WoodenSmall,
-                        128,
-                        64,
-                        17,
-                        Picasso.FontSize.Small,
-                        new Dictionary<string, Brush> {
-                            {chip.Name, Brushes.Yellow},
-                            {chip.ID.ToString(), Brushes.Orange}
-                        },
-                        System.Drawing.Color.Black
-                    );
                 }
                 // If NOT || AND (DSL reserved) we spawn them as vanilla items
                 else if (string_to_gates[chip.Name] == Gates.AND || string_to_gates[chip.Name] == Gates.NOT) {
