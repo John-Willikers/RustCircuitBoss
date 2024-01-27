@@ -1,8 +1,9 @@
 # Rust Circuit Boss
 > An Oxide plugin that converts Digital Logic Sim Diagrams to Circuitry Inside Rust.
 
-This plugin comes in two parts. First you have the C# Plugins that are installed on your [Oxide Server](https://umod.org/documentation/getting-started).
+This plugin comes in two parts. First you have the C# Plugins that are installed on your [Oxide Server](https://umod.org/documentation/getting-started), and a Digital Logic Sim project that comes with all the vanilla rust components built in the sim with them properly binded in the Plugin.
 
+## How to Install
 This is achieved by copying the contents of this repo's plugins folder into your plugins folder on your oxide server.
 `<rust_server_data_dir>/oxide/plugins/*.cs`
 
@@ -16,6 +17,7 @@ The Saves Location is Located at
 `C:\Users\[USERNAME]\AppData\LocalLow\SebastianLague\Digital Logic Sim\V1\Projects`.
 Copy the `Test` folder into there and open up the game.
 
+## How to Build a Diagram
 The current project files contain the basics for building Circuits in game such as
 ```
 1. Electrical Branch (E_Branch)
