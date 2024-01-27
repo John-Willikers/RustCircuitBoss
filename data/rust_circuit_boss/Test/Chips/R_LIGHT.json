@@ -1,19 +1,19 @@
 {
-  "Name": "GREEN_LIGHT",
-  "Colour": "#1D8C20",
+  "Name": "R_LIGHT",
+  "Colour": "#DE050B",
   "InputPins": [
     {
       "Name": "Power In",
-      "ID": 1440466390,
-      "PositionY": 0.6111109,
+      "ID": 1747347356,
+      "PositionY": 0.472221971,
       "ColourThemeName": "Red"
     }
   ],
   "OutputPins": [
     {
       "Name": "Passthrough",
-      "ID": 763761862,
-      "PositionY": 0.296296477,
+      "ID": 2031641637,
+      "PositionY": 0.5092591,
       "ColourThemeName": "Red"
     }
   ],
@@ -23,25 +23,21 @@
       "Source": {
         "PinType": 1,
         "SubChipID": 0,
-        "PinID": 1440466390
+        "PinID": 1747347356
       },
       "Target": {
         "PinType": 2,
         "SubChipID": 0,
-        "PinID": 763761862
+        "PinID": 2031641637
       },
       "WirePoints": [
         {
           "X": -7.837778,
-          "Y": 0.6111109
-        },
-        {
-          "X": 7.95370436,
-          "Y": 0.259259343
+          "Y": 0.472221971
         },
         {
           "X": 7.837778,
-          "Y": 0.296296477
+          "Y": 0.5092591
         }
       ],
       "ColourThemeName": "Red"

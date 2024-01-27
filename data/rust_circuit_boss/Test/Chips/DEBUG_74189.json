@@ -115,7 +115,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 444554740,
       "Points": [
         {
@@ -126,7 +126,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1173759837,
       "Points": [
         {
@@ -137,7 +137,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 2010660455,
       "Points": [
         {
@@ -148,7 +148,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 751387015,
       "Points": [
         {
@@ -159,7 +159,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1099766062,
       "Points": [
         {
@@ -170,7 +170,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1563073741,
       "Points": [
         {
@@ -181,7 +181,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1663292650,
       "Points": [
         {
@@ -192,7 +192,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 990022852,
       "Points": [
         {
@@ -203,7 +203,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 2036227447,
       "Points": [
         {
@@ -214,7 +214,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1057999184,
       "Points": [
         {
@@ -236,7 +236,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 1101640432,
       "Points": [
         {
@@ -247,7 +247,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 1877857201,
       "Points": [
         {
@@ -258,7 +258,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 2074744545,
       "Points": [
         {
@@ -269,7 +269,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 868735670,
       "Points": [
         {

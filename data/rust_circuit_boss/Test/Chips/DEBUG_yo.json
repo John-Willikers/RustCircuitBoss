@@ -1,0 +1,123 @@
+{
+  "Name": "DEBUG_yo",
+  "Colour": "#4D815C",
+  "InputPins": [],
+  "OutputPins": [],
+  "SubChips": [
+    {
+      "Name": "G_LIGHT",
+      "ID": 2033621063,
+      "Points": [
+        {
+          "X": 7.08333349,
+          "Y": 0.5000001
+        }
+      ],
+      "Data": null
+    },
+    {
+      "Name": "SWITCH",
+      "ID": 1490045317,
+      "Points": [
+        {
+          "X": -4.675926,
+          "Y": 0.9166664
+        }
+      ],
+      "Data": null
+    },
+    {
+      "Name": "TEST_GENERATOR",
+      "ID": 922789141,
+      "Points": [
+        {
+          "X": -6.546296,
+          "Y": 2.70370364
+        }
+      ],
+      "Data": null
+    },
+    {
+      "Name": "yo",
+      "ID": 1484742349,
+      "Points": [
+        {
+          "X": -0.7314815,
+          "Y": 0.8518517
+        }
+      ],
+      "Data": null
+    }
+  ],
+  "Connections": [
+    {
+      "Source": {
+        "PinType": 4,
+        "SubChipID": 922789141,
+        "PinID": 1054679048
+      },
+      "Target": {
+        "PinType": 3,
+        "SubChipID": 1490045317,
+        "PinID": 826433923
+      },
+      "WirePoints": [
+        {
+          "X": -5.251296,
+          "Y": 2.46370363
+        },
+        {
+          "X": -5.89592648,
+          "Y": 0.9166664
+        }
+      ],
+      "ColourThemeName": "Red"
+    },
+    {
+      "Source": {
+        "PinType": 4,
+        "SubChipID": 1490045317,
+        "PinID": 1487928366
+      },
+      "Target": {
+        "PinType": 3,
+        "SubChipID": 1484742349,
+        "PinID": 782740181
+      },
+      "WirePoints": [
+        {
+          "X": -3.45592618,
+          "Y": 0.9166664
+        },
+        {
+          "X": -1.18148148,
+          "Y": 0.8518517
+        }
+      ],
+      "ColourThemeName": "Red"
+    },
+    {
+      "Source": {
+        "PinType": 4,
+        "SubChipID": 1484742349,
+        "PinID": 701398611
+      },
+      "Target": {
+        "PinType": 3,
+        "SubChipID": 2033621063,
+        "PinID": 1440466390
+      },
+      "WirePoints": [
+        {
+          "X": -0.2814815,
+          "Y": 0.8518517
+        },
+        {
+          "X": 6.01333332,
+          "Y": 0.5000001
+        }
+      ],
+      "ColourThemeName": "Red"
+    }
+  ]
+}

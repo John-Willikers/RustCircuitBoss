@@ -16,7 +16,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 1542183453,
       "Points": [
         {
@@ -27,7 +27,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 742070551,
       "Points": [
         {
@@ -38,7 +38,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 247519979,
       "Points": [
         {
@@ -49,7 +49,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 1257561698,
       "Points": [
         {
@@ -148,7 +148,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1326257466,
       "Points": [
         {
@@ -159,7 +159,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 2000873195,
       "Points": [
         {
@@ -170,7 +170,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1907881119,
       "Points": [
         {
@@ -181,7 +181,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1472474787,
       "Points": [
         {
@@ -192,7 +192,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1235516959,
       "Points": [
         {
@@ -203,7 +203,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1894475257,
       "Points": [
         {
@@ -214,7 +214,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1524846424,
       "Points": [
         {
@@ -225,7 +225,7 @@
       "Data": null
     },
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 2066681006,
       "Points": [
         {

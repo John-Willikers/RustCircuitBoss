@@ -5,7 +5,7 @@
   "OutputPins": [],
   "SubChips": [
     {
-      "Name": "SIMPLE_SWITCH",
+      "Name": "SWITCH",
       "ID": 1447890594,
       "Points": [
         {
@@ -27,7 +27,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 52208946,
       "Points": [
         {
@@ -38,7 +38,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 436868084,
       "Points": [
         {
@@ -49,7 +49,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 877062755,
       "Points": [
         {
@@ -60,7 +60,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 1728943120,
       "Points": [
         {
@@ -82,7 +82,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 1569085685,
       "Points": [
         {
@@ -93,7 +93,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 870784208,
       "Points": [
         {
@@ -104,7 +104,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 1394748688,
       "Points": [
         {
@@ -115,7 +115,7 @@
       "Data": null
     },
     {
-      "Name": "GREEN_LIGHT",
+      "Name": "G_LIGHT",
       "ID": 276433729,
       "Points": [
         {
