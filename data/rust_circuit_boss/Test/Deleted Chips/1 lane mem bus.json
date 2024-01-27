@@ -1,0 +1,185 @@
+{
+  "Name": "1 lane mem bus",
+  "Colour": "#F01335",
+  "InputPins": [
+    {
+      "Name": "S_BIT_0",
+      "ID": 1203034100,
+      "PositionY": 3.34259272,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "S_BIT_1",
+      "ID": 1722581997,
+      "PositionY": 2.7962966,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "WE",
+      "ID": 1785688656,
+      "PositionY": -2.44444418,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "CS",
+      "ID": 1041079680,
+      "PositionY": -3.26851845,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "D1",
+      "ID": 958542784,
+      "PositionY": 1.82407439,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "D2",
+      "ID": 673527641,
+      "PositionY": 1.26851857,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "D3",
+      "ID": 1789079814,
+      "PositionY": 0.777778,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "D4",
+      "ID": 423268281,
+      "PositionY": 0.240740776,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "OutputPins": [
+    {
+      "Name": "O1",
+      "ID": 1179662999,
+      "PositionY": 2.11111116,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "O2",
+      "ID": 1859518942,
+      "PositionY": 1.51851833,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "O3",
+      "ID": 312557988,
+      "PositionY": 0.935184956,
+      "ColourThemeName": "Red"
+    },
+    {
+      "Name": "O4",
+      "ID": 366316019,
+      "PositionY": 0.32407403,
+      "ColourThemeName": "Red"
+    }
+  ],
+  "SubChips": [
+    {
+      "Name": "4_BIT_MEMORY_CELL",
+      "ID": 1675177840,
+      "Points": [
+        {
+          "X": 1.47222126,
+          "Y": 2.90527725
+        }
+      ],
+      "Data": null
+    },
+    {
+      "Name": "4_BIT_MEMORY_CELL",
+      "ID": 893093279,
+      "Points": [
+        {
+          "X": 1.47222126,
+          "Y": 1.32027745
+        }
+      ],
+      "Data": null
+    },
+    {
+      "Name": "4_BIT_MEMORY_CELL",
+      "ID": 1035254495,
+      "Points": [
+        {
+          "X": 1.47222126,
+          "Y": -0.264722347
+        }
+      ],
+      "Data": null
+    },
+    {
+      "Name": "4_BIT_MEMORY_CELL",
+      "ID": 943804212,
+      "Points": [
+        {
+          "X": 1.47222126,
+          "Y": -1.849722
+        }
+      ],
+      "Data": null
+    },
+    {
+      "Name": "2 Bit Decoder",
+      "ID": 184028762,
+      "Points": [
+        {
+          "X": -6.68518543,
+          "Y": 3.08333349
+        }
+      ],
+      "Data": null
+    }
+  ],
+  "Connections": [
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 1203034100
+      },
+      "Target": {
+        "PinType": 3,
+        "SubChipID": 184028762,
+        "PinID": 359756683
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": 3.34259272
+        },
+        {
+          "X": -7.46018553,
+          "Y": 3.44333363
+        }
+      ],
+      "ColourThemeName": "Red"
+    },
+    {
+      "Source": {
+        "PinType": 1,
+        "SubChipID": 0,
+        "PinID": 1722581997
+      },
+      "Target": {
+        "PinType": 3,
+        "SubChipID": 184028762,
+        "PinID": 1161483213
+      },
+      "WirePoints": [
+        {
+          "X": -7.837778,
+          "Y": 2.7962966
+        },
+        {
+          "X": -7.46018553,
+          "Y": 2.72333336
+        }
+      ],
+      "ColourThemeName": "Red"
+    }
+  ]
+}
