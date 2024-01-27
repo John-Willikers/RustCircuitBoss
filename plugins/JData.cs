@@ -51,8 +51,12 @@ namespace Oxide.Plugins {
         }
 
         [Command("c_clear")]
-         private void ProjectClearCommand(IPlayer player, string command, string[] args)
+        private void ProjectClearCommand(IPlayer player, string command, string[] args)
         {   
+            ClearEntities(player);
+        }
+
+        public void ClearEntities(IPlayer player) {
             player.Reply("Clearing");
             Project project = GetUserProject(player.Id.ToString());
             project.ClearCommonEntities();
@@ -167,11 +171,11 @@ namespace Oxide.Plugins {
             { "OR", Gates.OR },
             { "XOR", Gates.XOR },
             { "TEST_GENERATOR", Gates.TEST_GENERATOR },
-            { "SIMPLE_SWITCH", Gates.SIMPLE_SWITCH },
+            { "SWITCH", Gates.SIMPLE_SWITCH },
             { "SMART_SWITCH", Gates.SMART_SWITCH },
-            { "GREEN_LIGHT", Gates.GREEN_LIGHT },
-            { "RED_LIGHT", Gates.RED_LIGHT },
-            { "WHITE_LIGHT", Gates.WHITE_LIGHT },
+            { "G_LIGHT", Gates.GREEN_LIGHT },
+            { "R_LIGHT", Gates.RED_LIGHT },
+            { "W_LIGHT", Gates.WHITE_LIGHT },
             { "NOT", Gates.NOT },
             { "TIMER", Gates.TIMER }
         };
@@ -305,11 +309,11 @@ namespace Oxide.Plugins {
 
             var eBranch = entity as ElectricalBranch;
             if (eBranch != null)
-                eBranch.branchAmount = 10000;
+                eBranch.branchAmount = 1000;
 
             var testGen = entity as ElectricGenerator;
             if (testGen != null)
-                testGen.electricAmount = 1000000000;
+                testGen.electricAmount = 100000;
 
             var timerSwitch = entity as TimerSwitch;
             if (timerSwitch != null)
@@ -320,6 +324,82 @@ namespace Oxide.Plugins {
             entity.Spawn();
 
             return entity;
+        }
+
+        /*
+         * Wires two Entities together
+         * returns the IOSlots that were wired
+         *
+         * @param IOEntity source
+         * @param Gates source_binding
+         * @param string source_slot
+         * @param IOEntity target
+         * @param Gates target_binding
+         * @param string target_slot
+         * @return IOEntity.IOSlot[]
+        */
+        public IOEntity.IOSlot[] WireEntites(
+            IPlayer player,
+            IOEntity source,
+            Gates source_binding,
+            string source_slot, 
+            IOEntity target,
+            Gates target_binding,
+            string target_slot
+        ) {
+            // Get Indexes for IO Slots
+            #if DEBUG_PINS
+            player.Reply($"Source: {source_binding} | {source_slot}");
+            player.Reply($"Target: {target_binding} | {target_slot}");
+            #endif
+
+            int sourceIndex = io_definitions[source_binding == Gates.NOT ? Gates.XOR : source_binding][source_slot];
+            int targetIndex = io_definitions[target_binding == Gates.NOT ? Gates.XOR : target_binding][target_slot];
+
+            // Define Input and Output Slots
+            var inputSlot = target.inputs[targetIndex] ;
+            var outputSlot = source.outputs[sourceIndex];
+
+            // Setup Output Slot
+            if (inputSlot.connectedTo == null)
+                outputSlot.connectedTo = new IOEntity.IORef();
+            
+            inputSlot.connectedTo.Set(source);
+            inputSlot.connectedToSlot = sourceIndex;
+            inputSlot.connectedTo.Init();
+
+            // Setup Output Slot
+            if (outputSlot.connectedTo == null)
+                outputSlot.connectedTo = new IOEntity.IORef();
+            
+            outputSlot.connectedTo.Set(target);
+            outputSlot.connectedToSlot = targetIndex;
+            outputSlot.connectedTo.Init(); 
+
+            // Setup Wire - TODO FIXED THIS BROKEN SHIT (COULD BE FIXED SHIT NOW)
+            outputSlot.wireColour = WireTool.WireColour.Default;
+            outputSlot.type = IOEntity.IOType.Electric;
+
+            // var sourcePos = source.transform.position;
+            // var targetPos = target.transform.position;
+
+            // var lineList = new List<Vector3>(){
+            //     new Vector3(0, 0, 0),
+            //     new Vector3(
+            //         sourcePos.x - targetPos.x,
+            //         sourcePos.y - targetPos.y,
+            //         sourcePos.z - targetPos.z
+            //     )
+            // };
+            // outputSlot.linePoints = lineList.ToArray();
+
+            // Update source and Target
+            source.MarkDirtyForceUpdateOutputs();
+            source.SendNetworkUpdate();
+            target.MarkDirtyForceUpdateOutputs();
+            target.SendNetworkUpdate();
+
+            return new IOEntity.IOSlot[2]{inputSlot, outputSlot};
         }
     }
 
@@ -391,15 +471,25 @@ namespace Oxide.Plugins {
             player.Reply($"PIN STACK: {String.Join(" | ", pins.Keys)}");
             #endif
 
+            // Our list of connections to wire up, this takes into account duplicate pins, as well as their positions.
             HashSet<object[]> pinsToWire = new HashSet<object[]>();
             Dictionary<string, Vector3> duplicatePinPositions = new Dictionary<string, Vector3>();
             Dictionary<string, int> duplicatePins = new Dictionary<string, int>();
 
-            foreach (Connection connection in Connections) {    
+            // Iterate over this chips connections
+            foreach (Connection connection in Connections) {
+                // If we somehow wire something to itself, skip it    
+                if (connection.Source.SubChipID == connection.Target.SubChipID)
+                    continue;
+
+                // Grab our entities for wiring
                 var sourceEntity = LocateConnectionEntity(player, connection.Source, pins, electricalComponents);
                 var targetEntity = LocateConnectionEntity(player, connection.Target, pins, electricalComponents);
+                
+                //Check if the source entity has connections to multiple components
+                //We create an int and init it to 0 then add up for additional times we
+                //See a source connected
                 var duplicatePinId = $"{connection.Source.SubChipID.ToString()}_{connection.Source.PinID.ToString()}";
-
                 if (!duplicatePins.ContainsKey(duplicatePinId)) {
                     duplicatePinPositions.Add(duplicatePinId, sourceEntity.transform.position);
                     duplicatePins.Add(duplicatePinId, 0);
@@ -407,6 +497,7 @@ namespace Oxide.Plugins {
                     duplicatePins[duplicatePinId]++;
                 }
         
+                // BEGIN Locating Gate Types
                 var sourceChipId = connection.Source.SubChipID.ToString();
                 var sourcePinId  = connection.Source.PinID;
                 var targetChipId = connection.Target.SubChipID.ToString();
@@ -423,7 +514,9 @@ namespace Oxide.Plugins {
                                     : string_to_gates.ContainsKey(chipDefinitions[targetChipId].Name)
                                         ? string_to_gates[chipDefinitions[targetChipId].Name]
                                         : Gates.OR;
+                // END Locating Gate Types
 
+                // BEGIN Locating Gate Slots
                 var sourceSlot = "";
                 if (sourceGate == Gates.NOT || sourceGate == Gates.AND || (sourceGate == Gates.OR && chipDefinitions[sourceChipId].Name != "OR"))
                 {
@@ -436,24 +529,6 @@ namespace Oxide.Plugins {
                 else
                 {
                     sourceSlot = chipDefinitions[sourceChipId].DicOutputPins[sourcePinId].Name;
-                }
-
-                if (sourceGate == Gates.SIMPLE_SWITCH) {
-                    var sourcePosition = sourceEntity.transform.position;
-                    thisInstance.BindSaveSign(
-                        new Vector3(sourcePosition.x + 2, sourcePosition.y, sourcePosition.z),
-                        new Quaternion(0, 1, 0, 0),
-                        Picasso.Signs.WoodenSmall,
-                        128,
-                        64,
-                        17,
-                        Picasso.FontSize.Small,
-                        new Dictionary<string, Brush> {
-                            {chipDefinitions[targetChipId].Name, Brushes.Black},
-                            {chipDefinitions[targetChipId].DicInputPins[connection.Target.PinID].Name, Brushes.Orange}
-                        },
-                        System.Drawing.Color.Green
-                    );
                 }
 
                 #if DEBUG_PINS
@@ -485,57 +560,90 @@ namespace Oxide.Plugins {
                 {
                     targetSlot = chipDefinitions[targetChipId].DicInputPins[targetPinId].Name;
                 }
+                //END Locating Gate Slots
 
+                // If a switch add a sign showing its output connection
+                if (sourceGate == Gates.SIMPLE_SWITCH) {
+                    var sourcePosition = sourceEntity.transform.position;
+                    thisInstance.BindSaveSign(
+                        new Vector3(sourcePosition.x + 2, sourcePosition.y, sourcePosition.z),
+                        new Quaternion(0, 1, 0, 0),
+                        Picasso.Signs.WoodenSmall,
+                        128,
+                        64,
+                        17,
+                        Picasso.FontSize.Small,
+                        new Dictionary<string, Brush> {
+                            {chipDefinitions[targetChipId].Name, Brushes.Black},
+                            {chipDefinitions[targetChipId].DicInputPins[connection.Target.PinID].Name, Brushes.Orange}
+                        },
+                        System.Drawing.Color.Green
+                    );
+                }
+
+                // Add definition be iterated on later
                 pinsToWire.Add(
                     new object[7] {duplicatePinId, sourceEntity, sourceGate, sourceSlot, targetEntity, targetGate, targetSlot}
                 );
             }
 
+            // Next spawn Splitters for duplicate pin connections.
             Dictionary<string, List<IOEntity>> duplicatePinsConnector = new Dictionary<string, List<IOEntity>>();
-
             foreach (KeyValuePair<string, int> pin in duplicatePins) {
-                    if (pin.Value == 0)
-                        continue;
+                // If this pin had a single connection, skip it
+                if (pin.Value == 0)
+                    continue;
 
-                    Vector3 startPosition = new Vector3(duplicatePinPositions[pin.Key].x + 1, duplicatePinPositions[pin.Key].y, duplicatePinPositions[pin.Key].z);
+                // Position the Splitter next to our component
+                Vector3 startPosition = new Vector3(duplicatePinPositions[pin.Key].x, duplicatePinPositions[pin.Key].y, duplicatePinPositions[pin.Key].z + 1);
 
-                    if (pin.Value == 1) {
-                        duplicatePinsConnector.Add(pin.Key, new List<IOEntity> {SpawnEntity(
-                            prefab_gate_bindings[Gates.SPLITTER],
-                            startPosition,
-                            new Quaternion(1, 1, 0, 0)
-                        
-                        )as IOEntity});
-                        
-                        continue;
-                    }
-
-                    List<IOEntity> splitters = new List<IOEntity>();
-
-                    Vector3 multiSplitterPos =  new Vector3(startPosition.x, startPosition.y + 1, startPosition.z);
-                    for (int i = 1; i <= Math.Ceiling((double) pin.Value / 2); i++) {
-                        multiSplitterPos = new Vector3(multiSplitterPos.x, multiSplitterPos.y - 1, multiSplitterPos.z);
-                        splitters.Add(SpawnEntity(
-                            prefab_gate_bindings[Gates.SPLITTER],
-                            multiSplitterPos,
-                            new Quaternion(1, 1, 0, 0)
-                        ) as IOEntity);
-
-                        if (i > 1) {
-                            WireEntites(
-                                player,
-                                splitters[i - 2],
-                                Gates.SPLITTER,
-                                "Power Out 3",
-                                splitters[i - 1],
-                                Gates.SPLITTER,
-                                "Power In"
-                            );
-                        }
-                    }
-
-                    duplicatePinsConnector.Add(pin.Key, splitters);
+                // If we have 2 connections, just spawn a single splitter
+                if (pin.Value == 1) {
+                    duplicatePinsConnector.Add(pin.Key, new List<IOEntity> {SpawnEntity(
+                        prefab_gate_bindings[Gates.SPLITTER],
+                        startPosition,
+                        new Quaternion(1, 1, 0, 0)
+                    
+                    )as IOEntity});
+                    
+                    continue;
                 }
+
+
+                // If we get this far then we can assume we have more than 2 connections
+                // We need to spawn a splitter for every 2 connections
+                // We also need to wire the splitters together
+                List<IOEntity> splitters = new List<IOEntity>();
+
+                Vector3 multiSplitterPos =  new Vector3(startPosition.x, startPosition.y + 1, startPosition.z);
+                // player.Reply($"Pin Count: {pin.Value}");
+                // player.Reply($"double val: {(double) pin.Value / 2}");
+                // player.Reply($"loop counter: { Math.Ceiling((double) pin.Value / 2)}");
+                for (int i = 0; i <= (int) Math.Ceiling((double) pin.Value / 2); i++) {
+                    multiSplitterPos = new Vector3(multiSplitterPos.x, multiSplitterPos.y, multiSplitterPos.z + 1);
+                    splitters.Add(SpawnEntity(
+                        prefab_gate_bindings[Gates.SPLITTER],
+                        multiSplitterPos,
+                        new Quaternion(1, 1, 0, 0)
+                    ) as IOEntity);
+
+                    // Only self wire if on the second or greater iteration
+                    if (i == 0)
+                        continue;
+
+                    WireEntites(
+                        player,
+                        splitters[i - 1],
+                        Gates.SPLITTER,
+                        "Power Out 3",
+                        splitters[i],
+                        Gates.SPLITTER,
+                        "Power In"
+                    );
+                }
+
+                duplicatePinsConnector.Add(pin.Key, splitters);
+            }
 
             Dictionary<string, int> timesConnected = new Dictionary<string, int>();
             foreach (object[] wireInstructions in pinsToWire)
@@ -554,22 +662,32 @@ namespace Oxide.Plugins {
                     );
 
                     if (! timesConnected.ContainsKey(duplicatePinId))
-                        timesConnected.Add(duplicatePinId, 2);
+                        timesConnected.Add(duplicatePinId, 0);
                     else
                         timesConnected[duplicatePinId]++;
 
-                    int duplicatePinsConnectorIndex = timesConnected[duplicatePinId] / 2  == 1 
-                                                        ? 0
-                                                        : (int) (Math.Floor((float) (timesConnected[duplicatePinId] / 2)) - 1);
+                    // Which Splitter in our Splitter Stack do we want to select for connection
+                    int duplicatePinsConnectorIndex = 0;
+                    if (timesConnected[duplicatePinId] >= 2) {
+                        duplicatePinsConnectorIndex = (int) Math.Floor((double) timesConnected[duplicatePinId] / 2);
+                    }
 
-                    if (duplicatePinsConnector[duplicatePinId].Count == 1)
-                        duplicatePinsConnectorIndex = 0;
+                    // Which pin on the splitter do we want to connect to
+                    var splitterConnection = $"Power Out {timesConnected[duplicatePinId] + 1}";
+                    if (timesConnected[duplicatePinId] >= 2) {
+                        splitterConnection = timesConnected[duplicatePinId] % 2 == 0 ? "Power Out 1" : "Power Out 2";
+                    }
+
+                    // player.Reply($"Times Connected {timesConnected[duplicatePinId]}");
+                    // player.Reply($"PinID {duplicatePinId}");
+                    // player.Reply($"DupeCount {duplicatePinsConnector[duplicatePinId].Count}");
+                    // player.Reply($"Current Index {duplicatePinsConnectorIndex}");
 
                     WireEntites(
                         player,
                         duplicatePinsConnector[duplicatePinId][duplicatePinsConnectorIndex],
                         Gates.SPLITTER,
-                        timesConnected[duplicatePinId] % 2 == 0 ? "Power Out 1" : "Power Out 2",
+                        splitterConnection,
                         wireInstructions[4] as IOEntity,
                         (Gates) wireInstructions[5],
                         wireInstructions[6] as string
@@ -783,74 +901,6 @@ namespace Oxide.Plugins {
             return pinEntities;
         }
 
-        /*
-         * Wires two Entities together
-         * returns the IOSlots that were wired
-         *
-         * @param IOEntity source
-         * @param Gates source_binding
-         * @param string source_slot
-         * @param IOEntity target
-         * @param Gates target_binding
-         * @param string target_slot
-         * @return IOEntity.IOSlot[]
-        */
-        public IOEntity.IOSlot[] WireEntites(
-            IPlayer player,
-            IOEntity source,
-            Gates source_binding,
-            string source_slot, 
-            IOEntity target,
-            Gates target_binding,
-            string target_slot
-        ) {
-            // Get Indexes for IO Slots
-            #if DEBUG_PINS
-            player.Reply($"Source: {source_binding} | {source_slot}");
-            player.Reply($"Target: {target_binding} | {target_slot}");
-            #endif
-
-            int sourceIndex = io_definitions[source_binding == Gates.NOT ? Gates.XOR : source_binding][source_slot];
-            int targetIndex = io_definitions[target_binding == Gates.NOT ? Gates.XOR : target_binding][target_slot];
-
-            // Define Input and Output Slots
-            var inputSlot = target.inputs[targetIndex] ;
-            var outputSlot = source.outputs[sourceIndex];
-
-            // Setup Input Slot
-            if (inputSlot.connectedTo == null)
-                inputSlot.connectedTo = new IOEntity.IORef();
-            
-            inputSlot.connectedTo.Set(source);
-            inputSlot.connectedToSlot = sourceIndex;
-            inputSlot.connectedTo.Init();
-
-            // Setup Output Slot
-            if (outputSlot.connectedTo == null)
-                outputSlot.connectedTo = new IOEntity.IORef();
-            
-            outputSlot.connectedTo.Set(target);
-            outputSlot.connectedToSlot = targetIndex;
-            outputSlot.connectedTo.Init(); 
-
-            // Setup Wire - TODO FIXED THIS BROKEN SHIT (COULD BE FIXED SHIT NOW)
-            outputSlot.wireColour = WireTool.WireColour.Default;
-            outputSlot.type = IOEntity.IOType.Electric;
-
-            var lineList = new List<Vector3>(){
-                source.transform.position,
-                target.transform.position
-            };
-            outputSlot.linePoints = lineList.ToArray();
-
-            // Update source and Target
-            source.MarkDirtyForceUpdateOutputs();
-            source.SendNetworkUpdate();
-            // target.SendNetworkUpdate(); - Might be redundant
-
-            return new IOEntity.IOSlot[2]{inputSlot, outputSlot};
-        }
-
         public string ToString()
         {
             string message = $"{Name} \n SubChips:\n";
@@ -923,11 +973,11 @@ namespace Oxide.Plugins {
                 { "OR", Gates.OR },
                 { "XOR", Gates.XOR },
                 { "TEST_GENERATOR", Gates.TEST_GENERATOR },
-                { "SIMPLE_SWITCH", Gates.SIMPLE_SWITCH },
+                { "SWITCH", Gates.SIMPLE_SWITCH },
                 { "SMART_SWITCH", Gates.SMART_SWITCH },
-                { "GREEN_LIGHT", Gates.GREEN_LIGHT },
-                { "RED_LIGHT", Gates.RED_LIGHT },
-                { "WHITE_LIGHT", Gates.WHITE_LIGHT }
+                { "G_LIGHT", Gates.GREEN_LIGHT },
+                { "R_LIGHT", Gates.RED_LIGHT },
+                { "W_LIGHT", Gates.WHITE_LIGHT }
             };
 
             return dic[Name];

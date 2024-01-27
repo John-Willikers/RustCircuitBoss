@@ -79,6 +79,9 @@ namespace Oxide.Plugins
         [Command("c_build")]
         private void ProjectBuildCommand(IPlayer player, string command, string[] args)
         {
+            #if DEBUG
+            JData.ClearEntities(player);
+            #endif
             JData.BuildChip(args[0], player);
         }
 
