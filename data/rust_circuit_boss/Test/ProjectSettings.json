@@ -63,7 +63,8 @@
     "Page Enc",
     "4 Page",
     "4 Word",
-    "DEBUG_4_WORD"
+    "DEBUG_4_WORD",
+    "DEBUG_2_BIT"
   ],
   "StarredChips": [
     "AND",
@@ -97,7 +98,8 @@
     "Page Enc",
     "4 Page",
     "4 Word",
-    "DEBUG_4_WORD"
+    "DEBUG_4_WORD",
+    "DEBUG_2_BIT"
   ],
   "DisplayOptions": {
     "MainChipPinNameDisplayMode": 1,
