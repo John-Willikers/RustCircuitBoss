@@ -1,0 +1,4 @@
+- Add SubChip ID to a context menu when hovering over a subchip.
+- Add PinID Context Menu as well
+- Add Clipboard with usual commands (ctrl z, ctrl c)
+- Add Duplicate Key (ctrl d)
