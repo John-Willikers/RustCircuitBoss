@@ -60,28 +60,6 @@
     },
     {
       "Name": "AND",
-      "ID": 1918529139,
-      "Points": [
-        {
-          "X": 1.2037034,
-          "Y": 0.5092591
-        }
-      ],
-      "Data": null
-    },
-    {
-      "Name": "AND",
-      "ID": 689760459,
-      "Points": [
-        {
-          "X": 2.82407427,
-          "Y": 0.814815164
-        }
-      ],
-      "Data": null
-    },
-    {
-      "Name": "AND",
       "ID": 2108905283,
       "Points": [
         {
@@ -174,72 +152,6 @@
       "Source": {
         "PinType": 1,
         "SubChipID": 0,
-        "PinID": 1037165410
-      },
-      "Target": {
-        "PinType": 3,
-        "SubChipID": 1918529139,
-        "PinID": 1
-      },
-      "WirePoints": [
-        {
-          "X": -7.837778,
-          "Y": -1.13888919
-        },
-        {
-          "X": -4.601852,
-          "Y": -0.7962963
-        },
-        {
-          "X": -4.60709,
-          "Y": -0.6996817
-        },
-        {
-          "X": 0.481481582,
-          "Y": -0.5740741
-        },
-        {
-          "X": 0.4259258,
-          "Y": 0.351851583
-        },
-        {
-          "X": 0.6537034,
-          "Y": 0.3892591
-        }
-      ],
-      "ColourThemeName": "Indigo"
-    },
-    {
-      "Source": {
-        "PinType": 4,
-        "SubChipID": 1910878903,
-        "PinID": 1047340135
-      },
-      "Target": {
-        "PinType": 3,
-        "SubChipID": 1918529139,
-        "PinID": 0
-      },
-      "WirePoints": [
-        {
-          "X": -0.189259052,
-          "Y": -0.008148432
-        },
-        {
-          "X": 0.166666254,
-          "Y": 0.592592359
-        },
-        {
-          "X": 0.6537034,
-          "Y": 0.6292591
-        }
-      ],
-      "ColourThemeName": "Green"
-    },
-    {
-      "Source": {
-        "PinType": 1,
-        "SubChipID": 0,
         "PinID": 1400135355
       },
       "Target": {
@@ -258,83 +170,6 @@
         }
       ],
       "ColourThemeName": "Red"
-    },
-    {
-      "Source": {
-        "PinType": 4,
-        "SubChipID": 1918529139,
-        "PinID": 2
-      },
-      "Target": {
-        "PinType": 3,
-        "SubChipID": 689760459,
-        "PinID": 1
-      },
-      "WirePoints": [
-        {
-          "X": 1.75370336,
-          "Y": 0.5092591
-        },
-        {
-          "X": 2.27407432,
-          "Y": 0.694815159
-        }
-      ],
-      "ColourThemeName": "Green"
-    },
-    {
-      "Source": {
-        "PinType": 4,
-        "SubChipID": 689760459,
-        "PinID": 2
-      },
-      "Target": {
-        "PinType": 2,
-        "SubChipID": 0,
-        "PinID": 269079392
-      },
-      "WirePoints": [
-        {
-          "X": 3.37407422,
-          "Y": 0.814815164
-        },
-        {
-          "X": 7.837778,
-          "Y": 0.5092591
-        }
-      ],
-      "ColourThemeName": "Green"
-    },
-    {
-      "Source": {
-        "PinType": 1,
-        "SubChipID": 0,
-        "PinID": 179574147
-      },
-      "Target": {
-        "PinType": 3,
-        "SubChipID": 689760459,
-        "PinID": 0
-      },
-      "WirePoints": [
-        {
-          "X": -7.837778,
-          "Y": 1.00000024
-        },
-        {
-          "X": -4.740753,
-          "Y": 0.9796244
-        },
-        {
-          "X": -4.32407475,
-          "Y": 1.41666651
-        },
-        {
-          "X": 2.27407432,
-          "Y": 0.934815168
-        }
-      ],
-      "ColourThemeName": "Yellow"
     },
     {
       "Source": {
@@ -409,6 +244,29 @@
         {
           "X": -3.92037034,
           "Y": 0.1114812
+        }
+      ],
+      "ColourThemeName": "Red"
+    },
+    {
+      "Source": {
+        "PinType": 4,
+        "SubChipID": 1910878903,
+        "PinID": 1047340135
+      },
+      "Target": {
+        "PinType": 2,
+        "SubChipID": 0,
+        "PinID": 269079392
+      },
+      "WirePoints": [
+        {
+          "X": -0.189259052,
+          "Y": -0.008148432
+        },
+        {
+          "X": 7.837778,
+          "Y": 0.5092591
         }
       ],
       "ColourThemeName": "Red"

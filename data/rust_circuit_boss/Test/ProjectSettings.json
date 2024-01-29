@@ -59,13 +59,12 @@
     "8 Bit",
     "Addr Dec",
     "Addr Enc",
-    "Page DEC",
-    "Page Enc",
-    "4 Page",
+    "Word DEC",
+    "Word Enc",
     "4 Word",
-    "DEBUG_4_WORD",
-    "DEBUG_2_BIT",
-    "DEBUG_WIRES"
+    "74189",
+    "16 Byte Storage",
+    "DBG"
   ],
   "StarredChips": [
     "AND",
@@ -89,19 +88,8 @@
     "QUAD_OR",
     "74LS161",
     "74LS138",
-    "1 Bit",
-    "2 Bit",
-    "4 Bit",
-    "8 Bit",
-    "Addr Dec",
-    "Addr Enc",
-    "Page DEC",
-    "Page Enc",
-    "4 Page",
-    "4 Word",
-    "DEBUG_4_WORD",
-    "DEBUG_2_BIT",
-    "DEBUG_WIRES"
+    "16 Byte Storage",
+    "DBG"
   ],
   "DisplayOptions": {
     "MainChipPinNameDisplayMode": 1,

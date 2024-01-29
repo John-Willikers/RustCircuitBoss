@@ -47,7 +47,8 @@ namespace Oxide.Plugins {
             GenericPosition position = player.Position();
 
             chip.Init(0);
-            chip.Build(player, this, loaded_project, new Vector3(position.X, position.Y, position.Z), new Quaternion(0, 0, 0, 0)); //new Quaternion(1, 1, 0, 0));
+            var buildObjectStuff = chip.Build(player, this, loaded_project, new Vector3(position.X, position.Y, position.Z - 3), new Quaternion(0, 0, 0, 0)); //new Quaternion(1, 1, 0, 0));
+            player.Reply($"Built {buildObjectStuff[2]} electrical entities");
         }
 
         [Command("c_clear")]
@@ -579,11 +580,11 @@ namespace Oxide.Plugins {
 
             var eBranch = entity as ElectricalBranch;
             if (eBranch != null)
-                eBranch.branchAmount = 1000;
+                eBranch.branchAmount = 100000;
 
             var testGen = entity as ElectricGenerator;
             if (testGen != null)
-                testGen.electricAmount = 100000;
+                testGen.electricAmount = 2140000000;
 
             var timerSwitch = entity as TimerSwitch;
             if (timerSwitch != null)
@@ -653,9 +654,6 @@ namespace Oxide.Plugins {
             // Setup Wire - TODO FIXED THIS BROKEN SHIT (COULD BE FIXED SHIT NOW)
             outputSlot.wireColour = wire_color;
             outputSlot.type = IOEntity.IOType.Electric;
-
-            player.Reply($"source: {source.transform.position}");
-            player.Reply($"target: {target.transform.position}");
 
             var sourcePosition = source.transform.position;
             var targetPosition = target.transform.position;
@@ -737,7 +735,8 @@ namespace Oxide.Plugins {
             Project project_reference,
             Dictionary<string, Chip> chipDefinitions,
             Dictionary<string, IOEntity> pins,
-            Dictionary<string, IOEntity> electricalComponents
+            Dictionary<string, IOEntity> electricalComponents,
+            int totalEntityCount
         )
         {
             #if DEBUG_PINS
@@ -877,6 +876,7 @@ namespace Oxide.Plugins {
                         startPosition,
                         new Quaternion(0, 0, 0, 0) //new Quaternion(1, 1, 0, 0)
                     )as IOEntity});
+                    totalEntityCount++;
                     
                     continue;
                 }
@@ -898,6 +898,8 @@ namespace Oxide.Plugins {
                         multiSplitterPos,
                         new Quaternion(0, 0, 0, 0) //new Quaternion(1, 1, 0, 0)
                     ) as IOEntity);
+
+                    totalEntityCount++;
 
                     // Only self wire if on the second or greater iteration
                     if (i == 0)
@@ -990,6 +992,7 @@ namespace Oxide.Plugins {
             var pins = BuildPins(startPosition, startRotation); // Our Pins
             var electricalComponents = new Dictionary<string, IOEntity>(); // Every E Component we spawned for vanilla items
             chipDefinitions.Add(ID.ToString(), this);
+            int totalEntityCount = 0;
 
             #if DEBUG
             player.Reply($"Building {Name} ({ID})");
@@ -1029,7 +1032,7 @@ namespace Oxide.Plugins {
                 }
                 
                 // Adjust our Chip Position
-                var localChipAdjustedPosition = new Vector3(startPosition.x - chipPoint["X"], startPosition.y - chipPoint["Y"], startPosition.z);
+                var localChipAdjustedPosition = new Vector3(startPosition.x - chipPoint["X"], startPosition.y + chipPoint["Y"], startPosition.z);
 
                 // Is Custom Chip
                 if (!string_to_gates.ContainsKey(chip.Name))
@@ -1055,6 +1058,7 @@ namespace Oxide.Plugins {
                     }
                     var subChipDefinition = chipDefinitions[chip.ID.ToString()];
                     var buildObjects = subChipDefinition.Build(player, thisInstance, project_reference, nextSpot, startRotation, !depthShouldBeZOrY);
+                    totalEntityCount += (int) buildObjects[2];
 
                     // Add our SubChip Pins to our Pins List
                     foreach (KeyValuePair<string, IOEntity> entry in buildObjects[0] as Dictionary<string, IOEntity>) {
@@ -1083,6 +1087,7 @@ namespace Oxide.Plugins {
                     if (string_to_gates[chip.Name] == Gates.NOT) {
                         // Spawn our Pin
                         electricalComponents.Add(chip.ID.ToString(), BuildNot(player, localChipAdjustedPosition, startRotation));
+                        totalEntityCount += 2;
                     } else {
                         // Spawn our Pin
                         electricalComponents.Add(chip.ID.ToString(), SpawnEntity(
@@ -1090,6 +1095,7 @@ namespace Oxide.Plugins {
                             localChipAdjustedPosition,
                             startRotation
                         ) as IOEntity);
+                        totalEntityCount ++;
                     
                     }
                 }
@@ -1100,6 +1106,7 @@ namespace Oxide.Plugins {
                         localChipAdjustedPosition,
                         startRotation
                     ) as IOEntity);
+                    totalEntityCount++;
                 }
                 // Build Custom Chips Recursively
                 else {
@@ -1107,11 +1114,12 @@ namespace Oxide.Plugins {
                 }
             }
 
-            Wire(thisInstance, player, project_reference, chipDefinitions, pins, electricalComponents);
+            Wire(thisInstance, player, project_reference, chipDefinitions, pins, electricalComponents, totalEntityCount);
 
             return new object[]{
                 pins,
-                chipDefinitions[ID.ToString()]
+                chipDefinitions[ID.ToString()],
+                totalEntityCount
             };
         }
 
