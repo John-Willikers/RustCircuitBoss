@@ -839,7 +839,7 @@ namespace Oxide.Plugins {
                 if (sourceGate == Gates.SIMPLE_SWITCH) {
                     var sourcePosition = sourceEntity.transform.position;
                     thisInstance.BindSaveSign(
-                        new Vector3(sourcePosition.x + 2, sourcePosition.y, sourcePosition.z),
+                        new Vector3(sourcePosition.x - .7f, sourcePosition.y + .75f, sourcePosition.z),
                         new Quaternion(0, 0, 0, 0), //new Quaternion(0, 1, 0, 0),
                         Picasso.Signs.WoodenSmall,
                         128,
@@ -892,7 +892,7 @@ namespace Oxide.Plugins {
                 // player.Reply($"double val: {(double) pin.Value / 2}");
                 // player.Reply($"loop counter: { Math.Ceiling((double) pin.Value / 2)}");
                 for (int i = 0; i <= (int) Math.Ceiling((double) pin.Value / 2); i++) {
-                    multiSplitterPos = new Vector3(multiSplitterPos.x, multiSplitterPos.y, multiSplitterPos.z + 1);
+                    multiSplitterPos = new Vector3(multiSplitterPos.x, multiSplitterPos.y, multiSplitterPos.z - 1);
                     splitters.Add(SpawnEntity(
                         prefab_gate_bindings[Gates.SPLITTER],
                         multiSplitterPos,
@@ -1029,7 +1029,7 @@ namespace Oxide.Plugins {
                 }
                 
                 // Adjust our Chip Position
-                var localChipAdjustedPosition = new Vector3(startPosition.x + chipPoint["X"], startPosition.y + chipPoint["Y"], startPosition.z);
+                var localChipAdjustedPosition = new Vector3(startPosition.x - chipPoint["X"], startPosition.y - chipPoint["Y"], startPosition.z);
 
                 // Is Custom Chip
                 if (!string_to_gates.ContainsKey(chip.Name))
@@ -1049,7 +1049,7 @@ namespace Oxide.Plugins {
                         System.Drawing.Color.Black
                     );
 
-                    Vector3 nextSpot = new Vector3(startPosition.x, startPosition.y, startPosition.z + (15 * customChipCount));
+                    Vector3 nextSpot = new Vector3(startPosition.x, startPosition.y, startPosition.z - (15 * customChipCount));
                     if (!depthShouldBeZOrY) {
                         nextSpot = new Vector3(startPosition.x, startPosition.y + (15 * customChipCount), startPosition.z);
                     }
@@ -1125,7 +1125,7 @@ namespace Oxide.Plugins {
 
             var test_generator = SpawnEntity(
                 prefab_gate_bindings[Gates.TEST_GENERATOR],
-                new Vector3(localChipAdjustedPosition.x, localChipAdjustedPosition.y, localChipAdjustedPosition.z + 3),
+                new Vector3(localChipAdjustedPosition.x, localChipAdjustedPosition.y, localChipAdjustedPosition.z - 3),
                 startRotation
             ) as IOEntity;
 
@@ -1159,7 +1159,7 @@ namespace Oxide.Plugins {
                 // Spawn our Pin
                 pinEntities.Add($"{ID}_{pin.ID}", SpawnEntity(
                     prefab_gate_bindings[Gates.SPLITTER],
-                    new Vector3(startPosition.x + 8, startPosition.y + pin.PositionY, startPosition.z),
+                    new Vector3(startPosition.x - 8, startPosition.y + pin.PositionY, startPosition.z),
                     startRotation
                 ) as IOEntity);
             }
@@ -1168,7 +1168,7 @@ namespace Oxide.Plugins {
                 // Spawn our Pin
                 pinEntities.Add($"{ID}_{pin.ID}", SpawnEntity(
                     prefab_gate_bindings[Gates.OR],
-                    new Vector3(startPosition.x - 10, startPosition.y + pin.PositionY, startPosition.z),
+                    new Vector3(startPosition.x + 10, startPosition.y + pin.PositionY, startPosition.z),
                     startRotation
                 ) as IOEntity);
             }
