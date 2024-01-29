@@ -47,7 +47,7 @@ namespace Oxide.Plugins {
             GenericPosition position = player.Position();
 
             chip.Init(0);
-            chip.Build(player, this, loaded_project, new Vector3(position.X, position.Y, position.Z), new Quaternion(1, 1, 0, 0));
+            chip.Build(player, this, loaded_project, new Vector3(position.X, position.Y, position.Z), new Quaternion(0, 0, 0, 0)); //new Quaternion(1, 1, 0, 0));
         }
 
         [Command("c_clear")]
@@ -142,6 +142,12 @@ namespace Oxide.Plugins {
         NOT = 13,
         TIMER = 14
     }
+
+    class RustComponentDefinition {
+        public byte slotNumber;
+        public Vector3 offset;
+    }
+
     class ParentHelpers {
         // Prefabs
         public Dictionary<Gates, string> prefab_gate_bindings = new Dictionary<Gates, string>{
@@ -180,105 +186,369 @@ namespace Oxide.Plugins {
             { "TIMER", Gates.TIMER }
         };
         // IO Definitions
-        public Dictionary<Gates, Dictionary<string,int>> io_definitions = new Dictionary<Gates, Dictionary<string, int>>
+        public Dictionary<Gates, Dictionary<string,RustComponentDefinition>> io_definitions = new Dictionary<Gates, Dictionary<string, RustComponentDefinition>>
         {
-            {Gates.TEST_GENERATOR, new Dictionary<string, int>
+            {Gates.TEST_GENERATOR, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Power Output 1", 0 },
-                    {"Power Output 2", 1 },
-                    {"Power Output 3", 2 }
+                    {
+                        "Power Output 1",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -.77f, 0f)
+                        }
+                    },
+                    {
+                        "Power Output 2",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(0f, -.77f, -.42f)
+                        }
+                    },
+                    {
+                        "Power Output 3",
+                        new RustComponentDefinition{
+                            slotNumber = 2,
+                            offset = new Vector3(0f, -.77f, .42f)
+                        } 
+                    }
                 }
             },
-            {Gates.AND, new Dictionary<string, int>
+            {Gates.NOT, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Input A", 0 },
-                    {"Input B", 1 },
-                    {"Power Out", 0 }
+                    {
+                        "Input A",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(.03f, -.8f, 0f)
+                        }
+                    },
+                    {
+                        "Power Out",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(0f, -1.28f, 0f)
+                        }
+                    }
                 }
             },
-            {Gates.XOR, new Dictionary<string, int>
+            {Gates.AND, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Input A", 0 },
-                    {"Input B", 1 },
-                    {"Power Out", 0 }
+                    {
+                        "Input A",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(.03f, -.8f, 0f)
+                        }
+                    },
+                    {
+                        "Input B",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(-.03f, -.8f, 0f)
+                        }
+                    },
+                    {
+                        "Power Out",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -1.28f, 0f)
+                        }
+                    }
                 }
             },
-            {Gates.OR, new Dictionary<string, int>
+            {Gates.XOR, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Input A", 0 },
-                    {"Input B", 1 },
-                    {"Power Out", 0 }
+                    {
+                        "Input A",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(.03f, -.8f, 0f)
+                        }
+                    },
+                    {
+                        "Input B",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(-.03f, -.8f, 0f)
+                        }
+                    },
+                    {
+                        "Power Out",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -1.28f, 0f)
+                        }
+                    }
                 }
             },
-            {Gates.MEMORY_CELL, new Dictionary<string, int>
+            {Gates.OR, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Power In", 0 },
-                    {"SET", 1 },
-                    {"RESET", 2 },
-                    {"TOGGLE", 3 },
-                    {"Out", 0 },
-                    {"Inverted_Out", 1 }
+                    {
+                        "Input A",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(.03f, -.8f, 0f)
+                        }
+                    },
+                    {
+                        "Input B",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(-.03f, -.8f, 0f)
+                        }
+                    },
+                    {
+                        "Power Out",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -1.28f, 0f)
+                        }
+                    }
                 }
             },
-            {Gates.BLOCKER, new Dictionary<string, int>
+            {Gates.MEMORY_CELL, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Power In", 0 },
-                    {"Block Pass", 1 },
-                    {"Power Out", 0 }
+                    {
+                        "Power In",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, .15f, 0f)
+                        }
+                    },
+                    {
+                        "SET",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(.08f, -.06f, 0f)
+                        }
+                    },
+                    {
+                        "RESET",
+                        new RustComponentDefinition{
+                            slotNumber = 2,
+                            offset = new Vector3(.08f, .02f, 0f)
+                        }
+                    },
+                    {
+                        "TOGGLE",
+                        new RustComponentDefinition{
+                            slotNumber = 3,
+                            offset = new Vector3(.08f, .08f, 0f)
+                        }
+                    },
+                    {
+                        "Out",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(.04f, -.144f, 0f)
+                        }
+                    },
+                    {
+                        "Inverted_Out",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(-.04f, -.144f, 0f)
+                        }
+                    }
                 }
             },
-            {Gates.SPLITTER, new Dictionary<string, int>
+            {Gates.BLOCKER, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Power In", 0 },
-                    {"Power Out 1", 0 },
-                    {"Power Out 2", 1 },
-                    {"Power Out 3", 2 }
+                    {
+                        "Power In",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, .15f, 0f)
+                        }
+                    },
+                    {
+                        "Block Pass",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(-.05f, 0f, 0f)
+                        }
+                    },
+                    {
+                        "Power Out",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -.15f, 0f)
+                        }
+                    }
                 }
             },
-            {Gates.E_BRANCH, new Dictionary<string, int>
+            {Gates.SPLITTER, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Power Out", 0 },
-                    {"Branch Out", 1 },
-                    {"Power In", 0 }
+                    {
+                        "Power In",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -1.4f, 0f)
+                        }
+                    },
+                    {
+                        "Power Out 1",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(-.13f, -.82f, 0f)
+                        }
+                    },
+                    {
+                        "Power Out 2",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(0f, -.82f, 0f)
+                        }
+                    },
+                    {
+                        "Power Out 3",
+                        new RustComponentDefinition{
+                            slotNumber = 2,
+                            offset = new Vector3(.13f, -.82f, 0f)
+                        }
+                    }
                 }
             },
-            {Gates.SIMPLE_SWITCH, new Dictionary<string, int>
+            {Gates.E_BRANCH, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Electric Input", 0 },
-                    {"Output", 0 }
+                    {
+                        "Power Out",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(.05f, -.15f, 0f)
+                        }
+                    },
+                    {
+                        "Branch Out",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(-.05f, -.15f, 0f)
+                        }
+                    },
+                    {
+                        "Power In",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, .15f, 0f)
+                        }
+                    }
                 }
             },
-            {Gates.SMART_SWITCH, new Dictionary<string, int>
+            {Gates.SIMPLE_SWITCH, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Electric Input", 0 },
-                    {"Output", 0 }
+                    {
+                        "Electric Input",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -.8f, 0f)
+                        }
+                    }, 
+                    {
+                        "Output",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -1.18f, 0f)
+                        }
+                    }
                 }
             },
-            {Gates.GREEN_LIGHT, new Dictionary<string, int>
+            {Gates.SMART_SWITCH, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Power In", 0 },
-                    {"Passthrough", 0 }
+                    {
+                        "Electric Input",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -.8f, 0f)
+                        }
+                    }, 
+                    {
+                        "Output",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -1.18f, 0f)
+                        }
+                    }
                 }
             },
-            {Gates.RED_LIGHT, new Dictionary<string, int>
+            {Gates.GREEN_LIGHT, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Power In", 0 },
-                    {"Passthrough", 0 }
+                    {
+                        "Power In",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(.2f, 0, 0)
+                        }
+                    }, 
+                    {
+                        "Passthrough",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(-.2f, 0, 0)
+                        }
+                    }
                 }
             },
-            {Gates.WHITE_LIGHT, new Dictionary<string, int>
+            {Gates.RED_LIGHT, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Power In", 0 },
-                    {"Passthrough", 0 }
+                    {
+                        "Power In",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(.2f, 0, 0)
+                        }
+                    }, 
+                    {
+                        "Passthrough",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(-.2f, 0, 0)
+                        }
+                    }
                 }
             },
-            {Gates.TIMER, new Dictionary<string, int>
+            {Gates.WHITE_LIGHT, new Dictionary<string, RustComponentDefinition>
                 {
-                    {"Electric Input", 0 },
-                    {"Toggle On", 1 },
-                    {"Output", 0}
+                    {
+                        "Power In",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(.2f, 0, 0)
+                        }
+                    }, 
+                    {
+                        "Passthrough",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(-.2f, 0, 0)
+                        }
+                    }
                 }
             },
+            {Gates.TIMER, new Dictionary<string, RustComponentDefinition>
+                {
+                    {
+                        "Electric Input",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -.8f, 0f)
+                        }
+                    }, 
+                    {
+                        "Toggle On",
+                        new RustComponentDefinition{
+                            slotNumber = 1,
+                            offset = new Vector3(.15f, -1.05f, 0f)
+                        }
+                    }, 
+                    {
+                        "Output",
+                        new RustComponentDefinition{
+                            slotNumber = 0,
+                            offset = new Vector3(0f, -1.28f, 0f)
+                        }
+                    }
+                }
+            }
         };
 
         public void ClearCommonEntities()
@@ -345,7 +615,8 @@ namespace Oxide.Plugins {
             string source_slot, 
             IOEntity target,
             Gates target_binding,
-            string target_slot
+            string target_slot,
+            WireTool.WireColour wire_color = WireTool.WireColour.Default
         ) {
             // Get Indexes for IO Slots
             #if DEBUG_PINS
@@ -353,8 +624,11 @@ namespace Oxide.Plugins {
             player.Reply($"Target: {target_binding} | {target_slot}");
             #endif
 
-            int sourceIndex = io_definitions[source_binding == Gates.NOT ? Gates.XOR : source_binding][source_slot];
-            int targetIndex = io_definitions[target_binding == Gates.NOT ? Gates.XOR : target_binding][target_slot];
+            RustComponentDefinition sourceDefinition = io_definitions[source_binding == Gates.NOT ? Gates.XOR : source_binding][source_slot];
+            RustComponentDefinition targetDefinition = io_definitions[target_binding == Gates.NOT ? Gates.XOR : target_binding][target_slot];
+
+            byte sourceIndex = sourceDefinition.slotNumber;
+            byte targetIndex = targetDefinition.slotNumber;
 
             // Define Input and Output Slots
             var inputSlot = target.inputs[targetIndex] ;
@@ -377,21 +651,20 @@ namespace Oxide.Plugins {
             outputSlot.connectedTo.Init(); 
 
             // Setup Wire - TODO FIXED THIS BROKEN SHIT (COULD BE FIXED SHIT NOW)
-            outputSlot.wireColour = WireTool.WireColour.Default;
+            outputSlot.wireColour = wire_color;
             outputSlot.type = IOEntity.IOType.Electric;
 
-            // var sourcePos = source.transform.position;
-            // var targetPos = target.transform.position;
+            player.Reply($"source: {source.transform.position}");
+            player.Reply($"target: {target.transform.position}");
 
-            // var lineList = new List<Vector3>(){
-            //     new Vector3(0, 0, 0),
-            //     new Vector3(
-            //         sourcePos.x - targetPos.x,
-            //         sourcePos.y - targetPos.y,
-            //         sourcePos.z - targetPos.z
-            //     )
-            // };
-            // outputSlot.linePoints = lineList.ToArray();
+            var sourcePosition = source.transform.position;
+            var targetPosition = target.transform.position;
+
+            var lineList = new List<Vector3>(){
+                Vector3.zero - sourceDefinition.offset,
+                (targetPosition - sourcePosition) - targetDefinition.offset
+            };
+            outputSlot.linePoints = lineList.ToArray();
 
             // Update source and Target
             source.MarkDirtyForceUpdateOutputs();
@@ -567,7 +840,7 @@ namespace Oxide.Plugins {
                     var sourcePosition = sourceEntity.transform.position;
                     thisInstance.BindSaveSign(
                         new Vector3(sourcePosition.x + 2, sourcePosition.y, sourcePosition.z),
-                        new Quaternion(0, 1, 0, 0),
+                        new Quaternion(0, 0, 0, 0), //new Quaternion(0, 1, 0, 0),
                         Picasso.Signs.WoodenSmall,
                         128,
                         64,
@@ -583,7 +856,7 @@ namespace Oxide.Plugins {
 
                 // Add definition be iterated on later
                 pinsToWire.Add(
-                    new object[7] {duplicatePinId, sourceEntity, sourceGate, sourceSlot, targetEntity, targetGate, targetSlot}
+                    new object[8] {duplicatePinId, sourceEntity, sourceGate, sourceSlot, targetEntity, targetGate, targetSlot, connection.GetWireColor()}
                 );
             }
 
@@ -602,8 +875,7 @@ namespace Oxide.Plugins {
                     duplicatePinsConnector.Add(pin.Key, new List<IOEntity> {SpawnEntity(
                         prefab_gate_bindings[Gates.SPLITTER],
                         startPosition,
-                        new Quaternion(1, 1, 0, 0)
-                    
+                        new Quaternion(0, 0, 0, 0) //new Quaternion(1, 1, 0, 0)
                     )as IOEntity});
                     
                     continue;
@@ -624,7 +896,7 @@ namespace Oxide.Plugins {
                     splitters.Add(SpawnEntity(
                         prefab_gate_bindings[Gates.SPLITTER],
                         multiSplitterPos,
-                        new Quaternion(1, 1, 0, 0)
+                        new Quaternion(0, 0, 0, 0) //new Quaternion(1, 1, 0, 0)
                     ) as IOEntity);
 
                     // Only self wire if on the second or greater iteration
@@ -658,7 +930,8 @@ namespace Oxide.Plugins {
                         wireInstructions[3] as string,
                         duplicatePinsConnector[duplicatePinId][0],
                         Gates.SPLITTER,
-                        "Power In"
+                        "Power In",
+                        (WireTool.WireColour) wireInstructions[7]
                     );
 
                     if (! timesConnected.ContainsKey(duplicatePinId))
@@ -690,7 +963,8 @@ namespace Oxide.Plugins {
                         splitterConnection,
                         wireInstructions[4] as IOEntity,
                         (Gates) wireInstructions[5],
-                        wireInstructions[6] as string
+                        wireInstructions[6] as string,
+                        (WireTool.WireColour) wireInstructions[7]
                     );
 
                     continue;
@@ -703,7 +977,8 @@ namespace Oxide.Plugins {
                     wireInstructions[3] as string,
                     wireInstructions[4] as IOEntity,
                     (Gates) wireInstructions[5],
-                    wireInstructions[6] as string
+                    wireInstructions[6] as string,
+                    (WireTool.WireColour) wireInstructions[7]
                 );
             }
         }
@@ -722,7 +997,7 @@ namespace Oxide.Plugins {
 
             thisInstance.BindSaveSign(
                 new Vector3(startPosition.x + 2, startPosition.y + 5.5f, startPosition.z),
-                new Quaternion(0, 1, 0, 0),
+                new Quaternion(0, 0, 0, 0), //new Quaternion(0, 1, 0, 0),
                 Picasso.Signs.WoodenSmall,
                 128,
                 64,
@@ -761,7 +1036,7 @@ namespace Oxide.Plugins {
                 {
                     thisInstance.BindSaveSign(
                         localChipAdjustedPosition,
-                        new Quaternion(0, 1, 0, 0),
+                        new Quaternion(0, 0, 0, 0), //new Quaternion(0, 1, 0, 0),
                         Picasso.Signs.WoodenSmall,
                         128,
                         64,
@@ -943,10 +1218,30 @@ namespace Oxide.Plugins {
     class Connection {
         public ConnectionIO Source;
         public ConnectionIO Target;
+        public string ColourThemeName;
 
         public string ToString()
         {
             return $"Source\n {Source.ToString()} \n Target\n {Target.ToString()}";
+        }
+
+        public WireTool.WireColour GetWireColor()
+        {
+            switch (ColourThemeName)
+            {
+                case "Red":
+                    return WireTool.WireColour.Red;
+                case "Yellow":
+                    return WireTool.WireColour.Yellow;
+                case "Green":
+                    return WireTool.WireColour.Green;
+                case "Blue":
+                    return WireTool.WireColour.Blue;
+                case "Indigo":
+                    return WireTool.WireColour.Purple;
+                default:
+                    return WireTool.WireColour.Default;
+            }
         }
     }
 
