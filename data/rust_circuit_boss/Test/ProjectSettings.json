@@ -64,7 +64,8 @@
     "4 Page",
     "4 Word",
     "DEBUG_4_WORD",
-    "DEBUG_2_BIT"
+    "DEBUG_2_BIT",
+    "DEBUG_WIRES"
   ],
   "StarredChips": [
     "AND",
@@ -99,7 +100,8 @@
     "4 Page",
     "4 Word",
     "DEBUG_4_WORD",
-    "DEBUG_2_BIT"
+    "DEBUG_2_BIT",
+    "DEBUG_WIRES"
   ],
   "DisplayOptions": {
     "MainChipPinNameDisplayMode": 1,
