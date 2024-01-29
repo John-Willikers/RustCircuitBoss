@@ -779,10 +779,10 @@ namespace Oxide.Plugins {
                                     ? Gates.OR
                                     : string_to_gates.ContainsKey(chipDefinitions[sourceChipId].Name)
                                         ? string_to_gates[chipDefinitions[sourceChipId].Name]
-                                        : Gates.SPLITTER;
+                                        : Gates.E_BRANCH;
 
                 var targetGate = connection.Target.SubChipID == ID
-                                    ? Gates.SPLITTER
+                                    ? Gates.E_BRANCH
                                     : string_to_gates.ContainsKey(chipDefinitions[targetChipId].Name)
                                         ? string_to_gates[chipDefinitions[targetChipId].Name]
                                         : Gates.OR;
@@ -794,9 +794,9 @@ namespace Oxide.Plugins {
                 {
                     sourceSlot = "Power Out";
                 }
-                else if (sourceGate == Gates.SPLITTER && chipDefinitions[sourceChipId].Name != "SPLITTER")
+                else if (sourceGate == Gates.E_BRANCH && chipDefinitions[sourceChipId].Name != "E_BRANCH")
                 {
-                    sourceSlot = "Power Out 1";
+                    sourceSlot = "Power Out";
                 }
                 else
                 {
@@ -824,7 +824,7 @@ namespace Oxide.Plugins {
                 {
                     targetSlot = "Input A";
                 }
-                else if (targetGate == Gates.SPLITTER && chipDefinitions[targetChipId].Name != "SPLITTER")
+                else if (targetGate == Gates.E_BRANCH && chipDefinitions[targetChipId].Name != "E_BRANCH")
                 {
                     targetSlot = "Power In";
                 }
@@ -990,9 +990,9 @@ namespace Oxide.Plugins {
             var customChipCount = 1;
             var chipDefinitions = new Dictionary<string, Chip>();
             var pins = BuildPins(startPosition, startRotation); // Our Pins
+            int totalEntityCount = 0 + pins.Count;
             var electricalComponents = new Dictionary<string, IOEntity>(); // Every E Component we spawned for vanilla items
             chipDefinitions.Add(ID.ToString(), this);
-            int totalEntityCount = 0;
 
             #if DEBUG
             player.Reply($"Building {Name} ({ID})");
@@ -1166,7 +1166,7 @@ namespace Oxide.Plugins {
             foreach (Pin pin in OutputPins) {
                 // Spawn our Pin
                 pinEntities.Add($"{ID}_{pin.ID}", SpawnEntity(
-                    prefab_gate_bindings[Gates.SPLITTER],
+                    prefab_gate_bindings[Gates.E_BRANCH],
                     new Vector3(startPosition.x - 8, startPosition.y + pin.PositionY, startPosition.z),
                     startRotation
                 ) as IOEntity);
