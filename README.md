@@ -1,3 +1,6 @@
+# LATEST PROGRESS UPDATE ON MY CPU SERIES
+https://youtu.be/hetflRUMtss
+
 # Rust Circuit Boss
 > An Oxide plugin that converts Digital Logic Sim Diagrams to Circuitry Inside Rust.
 
